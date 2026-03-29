@@ -1,0 +1,26 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  errors:
+    invalid_annotation_target: ignore
+    use_build_context_synchronously: ignore
+    await_only_futures: ignore
+    always_declare_return_types: error
+    prefer_const_constructors: error
+
+linter:
+  rules:
+    - always_declare_return_types
+    - annotate_overrides
+    - prefer_const_constructors
+    - avoid_empty_else
+    - await_only_futures
+    - avoid_void_async
+    - empty_statements
+    - avoid_return_types_on_setters
+    - avoid_unnecessary_containers
+    - camel_case_extensions
+    - camel_case_types
+    - unnecessary_to_list_in_spreads
+    - unnecessary_string_escapes
+    - unnecessary_string_interpolations
