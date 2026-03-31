@@ -1,4 +1,3 @@
-import 'package:fit_prep/shared/home_screen.dart';
 import 'package:fit_prep/shared/welcome_page.dart';
 import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';

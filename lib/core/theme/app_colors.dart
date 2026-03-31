@@ -27,6 +27,12 @@ class AppColors {
     end: Alignment.bottomRight,
   );
 
+  static const LinearGradient secondaryGradient = LinearGradient(
+    colors: [deepBlue, tealBlue],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
   static const LinearGradient ctaButtonGradient = LinearGradient(
     colors: [vibrantGreen, darkGreen],
     begin: Alignment.topLeft,
