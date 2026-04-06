@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../core/constants/size_config.dart';
-import '../../core/theme/app_colors.dart';
+import '../constants/size_config.dart';
+import '../theme/app_colors.dart';
 
 class ActionCard extends StatelessWidget {
   const ActionCard({

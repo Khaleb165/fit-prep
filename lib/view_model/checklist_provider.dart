@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
-import '../../model/checklist_item.dart';
-import '../offline/hive.dart';
+import '../model/checklist_item.dart';
+import '../data/offline/hive.dart';
 
 class ChecklistProvider extends ChangeNotifier {
   ChecklistProvider({

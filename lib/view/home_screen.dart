@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../core/theme/app_colors.dart';
-import '../features/checklist/view/homescreen_tabs/home_tab.dart';
-import '../features/checklist/view/homescreen_tabs/plans_tab.dart';
-import 'widgets/gradient_logo_app_bar.dart';
+import 'homescreen_tabs/home_tab.dart';
+import 'homescreen_tabs/plans_tab.dart';
+import '../core/widgets/gradient_logo_app_bar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

@@ -1,6 +1,6 @@
 import 'package:fit_prep/core/constants/size_config.dart';
-import 'package:fit_prep/features/checklist/view_model/offline/hive.dart';
-import 'package:fit_prep/shared/home_screen.dart';
+import 'package:fit_prep/data/offline/hive.dart';
+import 'package:fit_prep/view/home_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../core/theme/app_colors.dart';

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/constants/size_config.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../shared/widgets/gradient_logo_app_bar.dart';
+import '../core/constants/size_config.dart';
+import '../core/theme/app_colors.dart';
+import '../core/widgets/gradient_logo_app_bar.dart';
 import '../model/checklist_item.dart';
-import '../view_model/provider/checklist_provider.dart';
-import 'widgets/checklist_tile.dart';
+import '../view_model/checklist_provider.dart';
+import '../core/widgets/checklist_tile.dart';
 
 class ChecklistPage extends StatelessWidget {
   const ChecklistPage({super.key});

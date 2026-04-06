@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/size_config.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../core/constants/size_config.dart';
+import '../../core/theme/app_colors.dart';
 import '../checklist_page.dart';
-import '../../../../shared/widgets/action_card.dart';
+import '../reminder_page.dart';
+import '../../core/widgets/action_card.dart';
 
 class HomeTab extends StatelessWidget {
   const HomeTab({super.key});
@@ -48,13 +49,20 @@ class HomeTab extends StatelessWidget {
                   ),
                 ),
                 SizedBox(width: getProportionateScreenHeight(10)),
-                const Expanded(
+                Expanded(
                   child: ActionCard(
                     title: 'Set a reminder',
                     imagePath: 'assets/images/reminder.png',
                     subtitle: 'Plan your workout time',
                     buttonLabel: 'Set reminder',
                     buttonColor: AppColors.deepBlue,
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const ReminderPage(),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
