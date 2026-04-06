@@ -27,10 +27,6 @@ class ChecklistTile extends StatelessWidget {
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        leading: CircularCheckbox(
-          isChecked: isChecked,
-          onTap: onToggle,
-        ),
         title: Text(
           title,
           style: TextStyle(
