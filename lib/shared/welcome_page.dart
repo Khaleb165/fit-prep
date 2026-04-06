@@ -1,4 +1,5 @@
 import 'package:fit_prep/core/constants/size_config.dart';
+import 'package:fit_prep/features/checklist/view_model/offline/hive.dart';
 import 'package:fit_prep/shared/home_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -6,6 +7,19 @@ import '../core/theme/app_colors.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
+
+  Future<void> _handleGetStarted(BuildContext context) async {
+    await HiveStorage.instance.setIsFirstTime(false);
+
+    if (!context.mounted) {
+      return;
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const HomePage()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,12 +74,7 @@ class WelcomePage extends StatelessWidget {
                   width: double.infinity,
                   height: 60,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const HomePage()));
-                    },
+                    onPressed: () => _handleGetStarted(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.vibrantGreen,
                       shape: RoundedRectangleBorder(
@@ -84,7 +93,7 @@ class WelcomePage extends StatelessWidget {
                   ),
                 ),
               ),
-               SizedBox(height: getProportionateScreenHeight(20)),
+              SizedBox(height: getProportionateScreenHeight(20)),
             ],
           ),
         ),

@@ -1,38 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/constants/size_config.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/gradient_logo_app_bar.dart';
+import '../model/checklist_item.dart';
+import '../view_model/provider/checklist_provider.dart';
+import 'widgets/checklist_tile.dart';
 
-class ChecklistPage extends StatefulWidget {
+class ChecklistPage extends StatelessWidget {
   const ChecklistPage({super.key});
 
-  @override
-  State<ChecklistPage> createState() => _ChecklistPageState();
-}
-
-class _ChecklistPageState extends State<ChecklistPage> {
-  final List<_ChecklistItem> _items = [];
-
-  Future<void> _showAddItemDialog() async {
-    String value = '';
+  Future<void> _showItemDialog(
+    BuildContext context, {
+    ChecklistItem? item,
+  }) async {
+    final TextEditingController controller = TextEditingController(
+      text: item?.title ?? '',
+    );
 
     final String? itemTitle = await showDialog<String>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Add item',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              )),
+          title: Text(
+            item == null ? 'Add item' : 'Edit item',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
           content: TextField(
             autofocus: true,
+            controller: controller,
             textCapitalization: TextCapitalization.sentences,
-            onChanged: (newValue) {
-              value = newValue;
-            },
             onSubmitted: (submittedValue) {
               final String trimmedValue = submittedValue.trim();
               if (trimmedValue.isEmpty) {
@@ -52,14 +54,14 @@ class _ChecklistPageState extends State<ChecklistPage> {
             ),
             ElevatedButton(
               onPressed: () {
-                final String trimmedValue = value.trim();
+                final String trimmedValue = controller.text.trim();
                 if (trimmedValue.isEmpty) {
                   return;
                 }
 
                 Navigator.of(context).pop(trimmedValue);
               },
-              child: const Text('Add'),
+              child: Text(item == null ? 'Add' : 'Save'),
             ),
           ],
         );
@@ -70,22 +72,23 @@ class _ChecklistPageState extends State<ChecklistPage> {
       return;
     }
 
-    setState(() {
-      _items.add(_ChecklistItem(title: itemTitle));
-    });
-  }
+    final ChecklistProvider provider = context.read<ChecklistProvider>();
+    if (item == null) {
+      provider.addItem(itemTitle);
+      return;
+    }
 
-  void _toggleItem(int index) {
-    setState(() {
-      _items[index] = _items[index].copyWith(
-        isChecked: !_items[index].isChecked,
-      );
-    });
+    if (itemTitle.trim() == item.title.trim()) {
+      return;
+    }
+
+    provider.updateItem(item.id, itemTitle);
   }
 
   @override
   Widget build(BuildContext context) {
     ScreenSize().init(context);
+    final List<ChecklistItem> items = context.watch<ChecklistProvider>().items;
 
     return Scaffold(
       appBar: const GradientLogoAppBar(),
@@ -107,28 +110,49 @@ class _ChecklistPageState extends State<ChecklistPage> {
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: getProportionateScreenHeight(20)),
                 Expanded(
-                  child: _items.isEmpty
-                      ? const Center(
+                  child: items.isEmpty
+                      ? Center(
                           child: Text(
                             'No items added yet.',
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: getProportionateScreenHeight(16),
                               color: AppColors.textSecondary,
                             ),
                           ),
                         )
                       : ListView.separated(
-                          itemCount: _items.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(height: 12),
+                          itemCount: items.length,
+                          separatorBuilder: (_, __) => SizedBox(
+                              height: getProportionateScreenHeight(10)),
                           itemBuilder: (context, index) {
-                            final _ChecklistItem item = _items[index];
-                            return _ChecklistTile(
-                              title: item.title,
-                              isChecked: item.isChecked,
-                              onToggle: () => _toggleItem(index),
+                            final ChecklistItem item = items[index];
+                            return Dismissible(
+                              key: ValueKey(item.id),
+                              direction: DismissDirection.horizontal,
+                              onDismissed: (_) {
+                                context
+                                    .read<ChecklistProvider>()
+                                    .deleteItem(item.id);
+                              },
+                              background: const _DeleteBackground(
+                                alignment: Alignment.centerLeft,
+                              ),
+                              secondaryBackground: const _DeleteBackground(
+                                alignment: Alignment.centerRight,
+                              ),
+                              child: ChecklistTile(
+                                title: item.title,
+                                isChecked: item.isChecked,
+                                onToggle: () => context
+                                    .read<ChecklistProvider>()
+                                    .toggleItem(item.id),
+                                onTap: () => _showItemDialog(
+                                  context,
+                                  item: item,
+                                ),
+                              ),
                             );
                           },
                         ),
@@ -146,7 +170,7 @@ class _ChecklistPageState extends State<ChecklistPage> {
             borderRadius: BorderRadius.circular(30),
           ),
           child: ElevatedButton(
-            onPressed: _showAddItemDialog,
+            onPressed: () => _showItemDialog(context),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.transparent,
               shadowColor: Colors.transparent,
@@ -170,96 +194,26 @@ class _ChecklistPageState extends State<ChecklistPage> {
   }
 }
 
-class _ChecklistTile extends StatelessWidget {
-  const _ChecklistTile({
-    required this.title,
-    required this.isChecked,
-    required this.onToggle,
+class _DeleteBackground extends StatelessWidget {
+  const _DeleteBackground({
+    required this.alignment,
   });
 
-  final String title;
-  final bool isChecked;
-  final VoidCallback onToggle;
+  final Alignment alignment;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.cardWhite,
+        color: Colors.redAccent,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        leading: _CircularCheckbox(
-          isChecked: isChecked,
-          onTap: onToggle,
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            fontSize: getProportionateScreenHeight(16),
-            fontWeight: FontWeight.w400,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        trailing: _CircularCheckbox(
-          isChecked: isChecked,
-          onTap: onToggle,
-        ),
-        onTap: onToggle,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      alignment: alignment,
+      child: const Icon(
+        Icons.delete_outline,
+        color: Colors.white,
       ),
-    );
-  }
-}
-
-class _CircularCheckbox extends StatelessWidget {
-  const _CircularCheckbox({
-    required this.isChecked,
-    required this.onTap,
-  });
-
-  final bool isChecked;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 28,
-        height: 28,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: isChecked ? AppColors.vibrantGreen : AppColors.borderDivider,
-        ),
-        child: isChecked
-            ? const Icon(
-                Icons.check,
-                size: 18,
-                color: Colors.white,
-              )
-            : null,
-      ),
-    );
-  }
-}
-
-class _ChecklistItem {
-  const _ChecklistItem({
-    required this.title,
-    this.isChecked = false,
-  });
-
-  final String title;
-  final bool isChecked;
-
-  _ChecklistItem copyWith({
-    String? title,
-    bool? isChecked,
-  }) {
-    return _ChecklistItem(
-      title: title ?? this.title,
-      isChecked: isChecked ?? this.isChecked,
     );
   }
 }
