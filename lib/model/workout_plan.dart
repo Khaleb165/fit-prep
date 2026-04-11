@@ -8,6 +8,7 @@ class WorkoutPlan {
     required this.items,
     required this.reminderSettings,
     required this.createdAt,
+    this.lastChecklistResetKey,
   });
 
   final String id;
@@ -15,6 +16,7 @@ class WorkoutPlan {
   final List<ChecklistItem> items;
   final ReminderSettings reminderSettings;
   final DateTime createdAt;
+  final String? lastChecklistResetKey;
 
   WorkoutPlan copyWith({
     String? id,
@@ -22,6 +24,7 @@ class WorkoutPlan {
     List<ChecklistItem>? items,
     ReminderSettings? reminderSettings,
     DateTime? createdAt,
+    String? lastChecklistResetKey,
   }) {
     return WorkoutPlan(
       id: id ?? this.id,
@@ -29,6 +32,7 @@ class WorkoutPlan {
       items: items ?? this.items,
       reminderSettings: reminderSettings ?? this.reminderSettings,
       createdAt: createdAt ?? this.createdAt,
+      lastChecklistResetKey: lastChecklistResetKey ?? this.lastChecklistResetKey,
     );
   }
 
@@ -39,6 +43,7 @@ class WorkoutPlan {
       'items': items.map((item) => item.toMap()).toList(),
       'reminderSettings': reminderSettings.toMap(),
       'createdAt': createdAt.toIso8601String(),
+      'lastChecklistResetKey': lastChecklistResetKey,
     };
   }
 
@@ -63,6 +68,7 @@ class WorkoutPlan {
       ),
       createdAt: DateTime.tryParse(map['createdAt'] as String? ?? '') ??
           DateTime.now(),
+      lastChecklistResetKey: map['lastChecklistResetKey'] as String?,
     );
   }
 }
