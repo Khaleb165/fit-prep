@@ -3,10 +3,11 @@ import 'package:provider/provider.dart';
 
 import '../core/constants/size_config.dart';
 import '../core/theme/app_colors.dart';
+import '../core/widgets/checklist_tile.dart';
 import '../core/widgets/gradient_logo_app_bar.dart';
 import '../model/checklist_item.dart';
 import '../view_model/checklist_provider.dart';
-import '../core/widgets/checklist_tile.dart';
+import 'reminder_page.dart';
 
 class ChecklistPage extends StatelessWidget {
   const ChecklistPage({super.key});
@@ -91,7 +92,21 @@ class ChecklistPage extends StatelessWidget {
     final List<ChecklistItem> items = context.watch<ChecklistProvider>().items;
 
     return Scaffold(
-      appBar: const GradientLogoAppBar(),
+      appBar: GradientLogoAppBar(
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ReminderPage(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.arrow_forward_rounded),
+            tooltip: 'Continue to reminder',
+          ),
+        ],
+      ),
       body: Container(
         width: double.infinity,
         height: double.infinity,
