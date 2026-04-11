@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'view_model/checklist_provider.dart';
 import 'view_model/plan_provider.dart';
+import 'core/services/notification_service.dart';
 import 'data/offline/hive.dart';
 import 'core/theme/app_theme.dart';
 
@@ -13,6 +14,7 @@ Future<void> main() async {
 
   final HiveStorage storage = HiveStorage.instance;
   await storage.init();
+  await NotificationService.instance.init();
 
   runApp(
     MainApp(

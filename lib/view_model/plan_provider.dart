@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../core/services/notification_service.dart';
 import '../data/offline/hive.dart';
 import '../model/checklist_item.dart';
 import '../model/reminder_settings.dart';
@@ -11,6 +12,7 @@ class PlanProvider extends ChangeNotifier {
   }) : _storage = storage {
     _reminderDraft = _storage.getReminderDraft();
     _plans = _storage.getWorkoutPlans();
+    _syncNotifications();
   }
 
   final HiveStorage _storage;
@@ -19,6 +21,10 @@ class PlanProvider extends ChangeNotifier {
 
   ReminderSettings get reminderDraft => _reminderDraft;
   List<WorkoutPlan> get plans => List.unmodifiable(_plans);
+
+  Future<void> _syncNotifications() async {
+    await NotificationService.instance.syncPlans(_plans);
+  }
 
   WorkoutPlan? getPlanById(String id) {
     final int index = _plans.indexWhere((plan) => plan.id == id);
@@ -67,6 +73,8 @@ class PlanProvider extends ChangeNotifier {
     _reminderDraft = const ReminderSettings();
     await _persistPlans();
     await _storage.saveReminderDraft(_reminderDraft);
+    await NotificationService.instance.showPlanCreatedNotification(plan);
+    await NotificationService.instance.schedulePlanNotifications(plan);
     notifyListeners();
     return plan;
   }
@@ -168,6 +176,7 @@ class PlanProvider extends ChangeNotifier {
 
     _plans[index] = updatedPlan;
     await _persistPlans();
+    await NotificationService.instance.schedulePlanNotifications(updatedPlan);
     notifyListeners();
   }
 
