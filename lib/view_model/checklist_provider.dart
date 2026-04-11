@@ -15,6 +15,17 @@ class ChecklistProvider extends ChangeNotifier {
 
   List<ChecklistItem> get items => List.unmodifiable(_items);
 
+  bool containsTitle(String title) {
+    final String trimmedTitle = title.trim().toLowerCase();
+    if (trimmedTitle.isEmpty) {
+      return false;
+    }
+
+    return _items.any(
+      (item) => item.title.trim().toLowerCase() == trimmedTitle,
+    );
+  }
+
   Future<void> addItem(String title) async {
     final String trimmedTitle = title.trim();
     if (trimmedTitle.isEmpty) {
@@ -29,6 +40,15 @@ class ChecklistProvider extends ChangeNotifier {
     );
     await _persistItems();
     notifyListeners();
+  }
+
+  Future<bool> addItemIfAbsent(String title) async {
+    if (containsTitle(title)) {
+      return false;
+    }
+
+    await addItem(title);
+    return true;
   }
 
   Future<void> updateItem(String id, String title) async {
