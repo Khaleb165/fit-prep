@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../core/constants/size_config.dart';
 import '../core/theme/app_colors.dart';
 import '../core/widgets/checklist_tile.dart';
+import '../core/widgets/delete_background.dart';
 import '../core/widgets/gradient_logo_app_bar.dart';
 import '../model/checklist_item.dart';
 import '../view_model/checklist_provider.dart';
@@ -151,10 +152,10 @@ class ChecklistPage extends StatelessWidget {
                                     .read<ChecklistProvider>()
                                     .deleteItem(item.id);
                               },
-                              background: const _DeleteBackground(
+                              background: const DeleteBackground(
                                 alignment: Alignment.centerLeft,
                               ),
-                              secondaryBackground: const _DeleteBackground(
+                              secondaryBackground: const DeleteBackground(
                                 alignment: Alignment.centerRight,
                               ),
                               child: ChecklistTile(
@@ -204,30 +205,6 @@ class ChecklistPage extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _DeleteBackground extends StatelessWidget {
-  const _DeleteBackground({
-    required this.alignment,
-  });
-
-  final Alignment alignment;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.redAccent,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      alignment: alignment,
-      child: const Icon(
-        Icons.delete_outline,
-        color: Colors.white,
       ),
     );
   }
