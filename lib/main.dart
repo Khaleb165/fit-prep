@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'view_model/checklist_provider.dart';
+import 'view_model/plan_provider.dart';
 import 'data/offline/hive.dart';
 import 'core/theme/app_theme.dart';
 
@@ -33,8 +34,15 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ChecklistProvider(storage: storage),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => ChecklistProvider(storage: storage),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => PlanProvider(storage: storage),
+        ),
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: buildAppTheme(),
