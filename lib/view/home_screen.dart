@@ -6,14 +6,25 @@ import 'homescreen_tabs/plans_tab.dart';
 import '../core/widgets/gradient_logo_app_bar.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({
+    this.initialTabIndex = 0,
+    super.key,
+  });
+
+  final int initialTabIndex;
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialTabIndex;
+  }
 
   @override
   Widget build(BuildContext context) {
