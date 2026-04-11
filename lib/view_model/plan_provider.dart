@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../core/services/notification_service.dart';
+import '../core/utils/utils.dart';
 import '../data/offline/hive.dart';
 import '../model/checklist_item.dart';
 import '../model/reminder_settings.dart';
@@ -12,7 +13,7 @@ class PlanProvider extends ChangeNotifier {
   }) : _storage = storage {
     _reminderDraft = _storage.getReminderDraft();
     _plans = _storage.getWorkoutPlans();
-    _syncNotifications();
+    _initializePlanState();
   }
 
   final HiveStorage _storage;
@@ -22,8 +23,125 @@ class PlanProvider extends ChangeNotifier {
   ReminderSettings get reminderDraft => _reminderDraft;
   List<WorkoutPlan> get plans => List.unmodifiable(_plans);
 
+  Future<void> _initializePlanState() async {
+    await _applyDailyChecklistResets();
+    await _syncNotifications();
+  }
+
   Future<void> _syncNotifications() async {
     await NotificationService.instance.syncPlans(_plans);
+  }
+
+  Future<void> _applyDailyChecklistResets() async {
+    bool changed = false;
+    final List<WorkoutPlan> updatedPlans = <WorkoutPlan>[];
+
+    for (final WorkoutPlan plan in _plans) {
+      final WorkoutPlan refreshedPlan = _planWithResetIfNeeded(plan);
+      if (!_plansEqual(plan, refreshedPlan)) {
+        changed = true;
+      }
+      updatedPlans.add(refreshedPlan);
+    }
+
+    if (!changed) {
+      return;
+    }
+
+    _plans
+      ..clear()
+      ..addAll(updatedPlans);
+    await _persistPlans();
+    await NotificationService.instance.syncPlans(_plans);
+    notifyListeners();
+  }
+
+  WorkoutPlan _planWithResetIfNeeded(WorkoutPlan plan) {
+    final DateTime now = DateTime.now();
+    final DateTime nextWorkoutDateTime = _nextWorkoutDateTime(
+      plan.reminderSettings,
+      now,
+    );
+    final DateTime resetBoundary = nextWorkoutDateTime.subtract(
+      const Duration(hours: 6),
+    );
+    final String workoutDateKey = _dateKey(nextWorkoutDateTime);
+
+    if (now.isBefore(resetBoundary) ||
+        plan.lastChecklistResetKey == workoutDateKey) {
+      return plan;
+    }
+
+    final List<ChecklistItem> resetItems = plan.items
+        .map(
+          (item) => item.copyWith(isChecked: false),
+        )
+        .toList();
+
+    return plan.copyWith(
+      items: resetItems,
+      lastChecklistResetKey: workoutDateKey,
+    );
+  }
+
+  bool _plansEqual(WorkoutPlan first, WorkoutPlan second) {
+    if (first.id != second.id ||
+        first.title != second.title ||
+        first.lastChecklistResetKey != second.lastChecklistResetKey ||
+        first.items.length != second.items.length) {
+      return false;
+    }
+
+    for (int index = 0; index < first.items.length; index++) {
+      final ChecklistItem firstItem = first.items[index];
+      final ChecklistItem secondItem = second.items[index];
+      if (firstItem.id != secondItem.id ||
+          firstItem.title != secondItem.title ||
+          firstItem.isChecked != secondItem.isChecked) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  DateTime _nextWorkoutDateTime(
+    ReminderSettings settings,
+    DateTime now,
+  ) {
+    final int gymHour = _to24Hour(
+      settings.selectedHourIndex + 1,
+      settings.selectedMeridiemIndex == 0,
+    );
+    final int gymMinute = int.parse(minutes[settings.selectedMinuteIndex]);
+
+    DateTime workoutDateTime = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      gymHour,
+      gymMinute,
+    );
+
+    if (!workoutDateTime.isAfter(now)) {
+      workoutDateTime = workoutDateTime.add(const Duration(days: 1));
+    }
+
+    return workoutDateTime;
+  }
+
+  int _to24Hour(int hour, bool isAm) {
+    if (isAm) {
+      return hour == 12 ? 0 : hour;
+    }
+
+    return hour == 12 ? 12 : hour + 12;
+  }
+
+  String _dateKey(DateTime dateTime) {
+    final String month = dateTime.month.toString().padLeft(2, '0');
+    final String day = dateTime.day.toString().padLeft(2, '0');
+    return '${dateTime.year}-$month-$day';
   }
 
   WorkoutPlan? getPlanById(String id) {
@@ -67,6 +185,7 @@ class PlanProvider extends ChangeNotifier {
           .toList(),
       reminderSettings: _reminderDraft,
       createdAt: now,
+      lastChecklistResetKey: null,
     );
 
     _plans.insert(0, plan);
@@ -161,6 +280,7 @@ class PlanProvider extends ChangeNotifier {
       plan.copyWith(
         title: '${reminderSettings.periodLabel} Workout Plan',
         reminderSettings: reminderSettings,
+        lastChecklistResetKey: null,
       ),
     );
   }
