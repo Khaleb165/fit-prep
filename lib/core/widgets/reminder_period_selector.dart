@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants/size_config.dart';
-import '../utils/theme/app_colors.dart';
+import '../theme/app_colors.dart';
 
 class ReminderPeriodSelector extends StatelessWidget {
   const ReminderPeriodSelector({

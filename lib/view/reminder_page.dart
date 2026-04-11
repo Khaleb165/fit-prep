@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/constants/size_config.dart';
-import '../core/utils/theme/app_colors.dart';
+import '../core/theme/app_colors.dart';
 import '../core/utils/utils.dart';
 import '../core/widgets/gradient_logo_app_bar.dart';
 import '../core/widgets/reminder_period_selector.dart';

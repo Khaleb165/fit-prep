@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../core/constants/size_config.dart';
-import '../core/utils/theme/app_colors.dart';
+import '../core/theme/app_colors.dart';
 import '../core/widgets/gradient_logo_app_bar.dart';
 import '../model/checklist_item.dart';
 import '../view_model/checklist_provider.dart';

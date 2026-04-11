@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'view_model/checklist_provider.dart';
 import 'data/offline/hive.dart';
-import 'core/utils/theme/app_theme.dart';
+import 'core/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
