@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/constants/size_config.dart';
 import '../../core/utils/theme/app_colors.dart';
+import '../../core/utils/utils.dart';
 import '../../core/widgets/quick_tip_card.dart';
 import '../checklist_page.dart';
 import '../quick_tip_detail_page.dart';
@@ -10,24 +11,6 @@ import '../../core/widgets/action_card.dart';
 
 class HomeTab extends StatelessWidget {
   const HomeTab({super.key});
-
-  static const List<String> _gymEssentials = [
-    'Water bottle',
-    'Gym towel',
-    'Training shoes',
-    'Comfortable workout clothes',
-    'Headphones or earbuds',
-    'Lock for your gym locker',
-  ];
-
-  static const List<String> _healthySnacks = [
-    'Greek yogurt with berries',
-    'Banana with peanut butter',
-    'Trail mix with nuts and seeds',
-    'Apple slices with almond butter',
-    'Protein bar with low added sugar',
-    'Boiled eggs and whole-grain crackers',
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +104,8 @@ class HomeTab extends StatelessWidget {
                             imagePath: 'assets/images/dumbbell.png',
                             description:
                                 'Keep these basics ready so each gym session starts smoothly.',
-                            items: _gymEssentials,
+                            items: gymEssentials,
+                            mode: QuickTipDetailMode.addToChecklist,
                           ),
                         ),
                       );
@@ -142,7 +126,9 @@ class HomeTab extends StatelessWidget {
                             imagePath: 'assets/images/snack_bowl.png',
                             description:
                                 'Simple snack ideas to support energy before or after training.',
-                            items: _healthySnacks,
+                            items: healthySnacks,
+                            mode: QuickTipDetailMode.expandableInfo,
+                            itemDetails: healthySnackDetails,
                           ),
                         ),
                       );
