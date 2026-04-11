@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../core/constants/size_config.dart';
 import '../core/utils/theme/app_colors.dart';
+import '../core/utils/utils.dart';
 import '../core/widgets/gradient_logo_app_bar.dart';
+import '../core/widgets/quick_tip_listtile.dart';
+import '../view_model/checklist_provider.dart';
+
+
 
 class QuickTipDetailPage extends StatelessWidget {
   const QuickTipDetailPage({
@@ -10,6 +16,8 @@ class QuickTipDetailPage extends StatelessWidget {
     required this.imagePath,
     required this.description,
     required this.items,
+    this.mode = QuickTipDetailMode.standard,
+    this.itemDetails = const {},
     super.key,
   });
 
@@ -17,6 +25,54 @@ class QuickTipDetailPage extends StatelessWidget {
   final String imagePath;
   final String description;
   final List<String> items;
+  final QuickTipDetailMode mode;
+  final Map<String, String> itemDetails;
+
+  Future<void> _handleChecklistItemTap(
+    BuildContext context,
+    String item,
+  ) async {
+    final bool? shouldAdd = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Add to checklist?'),
+          content: Text('Do you want to add "$item" to your gym checklist?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldAdd != true || !context.mounted) {
+      return;
+    }
+
+    final bool added =
+        await context.read<ChecklistProvider>().addItemIfAbsent(item);
+
+    if (!context.mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          added
+              ? '"$item" was added to your gym checklist.'
+              : '"$item" is already in your gym checklist.',
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,9 +125,17 @@ class QuickTipDetailPage extends StatelessWidget {
                         padding: EdgeInsets.only(
                           bottom: getProportionateScreenHeight(12),
                         ),
-                        child: _QuickTipListTile(
+                        child: QuickTipListTile(
                           index: entry.key + 1,
                           label: entry.value,
+                          detail: itemDetails[entry.value],
+                          mode: mode,
+                          onTap: mode == QuickTipDetailMode.addToChecklist
+                              ? () => _handleChecklistItemTap(
+                                    context,
+                                    entry.value,
+                                  )
+                              : null,
                         ),
                       ),
                     ),
@@ -84,59 +148,8 @@ class QuickTipDetailPage extends StatelessWidget {
   }
 }
 
-class _QuickTipListTile extends StatelessWidget {
-  const _QuickTipListTile({
-    required this.index,
-    required this.label,
-  });
 
-  final int index;
-  final String label;
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: getProportionateScreenWidth(14),
-        vertical: getProportionateScreenHeight(14),
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: getProportionateScreenWidth(28),
-            height: getProportionateScreenWidth(28),
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.deepBlue,
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              '$index',
-              style: TextStyle(
-                fontSize: getProportionateScreenHeight(12),
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-            ),
-          ),
-          SizedBox(width: getProportionateScreenWidth(12)),
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: getProportionateScreenHeight(14),
-                color: AppColors.textPrimary,
-                height: 1.35,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+
+
+
