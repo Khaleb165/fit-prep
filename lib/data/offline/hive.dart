@@ -1,6 +1,8 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../model/checklist_item.dart';
+import '../../model/reminder_settings.dart';
+import '../../model/workout_plan.dart';
 
 class HiveStorage {
   HiveStorage._();
