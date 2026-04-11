@@ -63,7 +63,8 @@ class _ReminderPageState extends State<ReminderPage> {
     if (checklistProvider.items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Add items to your checklist first before saving a reminder.'),
+          content: Text(
+              'Add items to your checklist first before saving a reminder.'),
         ),
       );
       return;
@@ -258,27 +259,30 @@ class _ReminderPageState extends State<ReminderPage> {
       ),
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: AppColors.ctaButtonGradient,
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: ElevatedButton(
-            onPressed: () => _savePlan(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              shadowColor: Colors.transparent,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
+        child: Padding(
+          padding: EdgeInsets.only(bottom: getProportionateScreenHeight(10)),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: AppColors.ctaButtonGradient,
+              borderRadius: BorderRadius.circular(30),
             ),
-            child: const Text(
-              'Save Reminder',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
+            child: ElevatedButton(
+              onPressed: () => _savePlan(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              child: const Text(
+                'Save Reminder',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
             ),
           ),
