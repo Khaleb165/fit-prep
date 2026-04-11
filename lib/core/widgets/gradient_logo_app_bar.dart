@@ -4,7 +4,12 @@ import '../theme/app_colors.dart';
 
 class GradientLogoAppBar extends StatelessWidget
     implements PreferredSizeWidget {
-  const GradientLogoAppBar({super.key});
+  const GradientLogoAppBar({
+    this.actions,
+    super.key,
+  });
+
+  final List<Widget>? actions;
 
   @override
   Size get preferredSize => const Size.fromHeight(110);
@@ -31,6 +36,7 @@ class GradientLogoAppBar extends StatelessWidget
             height: 38,
           ),
         ),
+        actions: actions,
       ),
     );
   }
