@@ -71,5 +71,19 @@ ThemeData buildAppTheme() {
         borderSide: const BorderSide(color: AppColors.deepBlue, width: 1.5),
       ),
     ),
+    snackBarTheme: SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: AppColors.deepBlue,
+      contentTextStyle: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w500,
+      ),
+      actionTextColor: AppColors.lightGreen,
+      disabledActionTextColor: Colors.white70,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+      ),
+    ),
   );
 }
