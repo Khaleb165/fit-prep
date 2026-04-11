@@ -1,5 +1,5 @@
 import 'package:fit_prep/core/constants/size_config.dart';
-import 'package:fit_prep/core/theme/app_colors.dart';
+import 'package:fit_prep/core/utils/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class TimeWheel extends StatefulWidget {

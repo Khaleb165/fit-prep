@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants/size_config.dart';
-import '../theme/app_colors.dart';
+import '../utils/theme/app_colors.dart';
 import 'circular_checkbox.dart';
 
 class ChecklistTile extends StatelessWidget {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/concave_clipper.dart';
-import '../theme/app_colors.dart';
+import '../utils/theme/app_colors.dart';
 
 class GradientLogoAppBar extends StatelessWidget
     implements PreferredSizeWidget {

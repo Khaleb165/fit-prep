@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../core/theme/app_colors.dart';
+import '../core/utils/theme/app_colors.dart';
 import 'homescreen_tabs/home_tab.dart';
 import 'homescreen_tabs/plans_tab.dart';
 import '../core/widgets/gradient_logo_app_bar.dart';
