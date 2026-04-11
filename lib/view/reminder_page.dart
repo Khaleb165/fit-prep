@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../core/constants/size_config.dart';
 import '../core/theme/app_colors.dart';
@@ -6,6 +7,9 @@ import '../core/utils/utils.dart';
 import '../core/widgets/gradient_logo_app_bar.dart';
 import '../core/widgets/reminder_period_selector.dart';
 import '../core/widgets/time_wheel.dart';
+import '../view_model/checklist_provider.dart';
+import '../view_model/plan_provider.dart';
+import 'home_screen.dart';
 
 class ReminderPage extends StatefulWidget {
   const ReminderPage({super.key});
@@ -15,11 +19,75 @@ class ReminderPage extends StatefulWidget {
 }
 
 class _ReminderPageState extends State<ReminderPage> {
+  late final PlanProvider _planProvider;
+  bool _didLoadInitialState = false;
   int _selectedPeriodIndex = 0;
   int _selectedHourIndex = 6;
   int _selectedMinuteIndex = 0;
   int _selectedMeridiemIndex = 0;
   bool _remindBefore = true;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didLoadInitialState) {
+      return;
+    }
+
+    _planProvider = context.read<PlanProvider>();
+    final reminderDraft = _planProvider.reminderDraft;
+    _selectedPeriodIndex = reminderDraft.selectedPeriodIndex;
+    _selectedHourIndex = reminderDraft.selectedHourIndex;
+    _selectedMinuteIndex = reminderDraft.selectedMinuteIndex;
+    _selectedMeridiemIndex = reminderDraft.selectedMeridiemIndex;
+    _remindBefore = reminderDraft.remindBefore;
+    _didLoadInitialState = true;
+  }
+
+  Future<void> _persistDraft() async {
+    await _planProvider.updateReminderDraft(
+      _planProvider.reminderDraft.copyWith(
+        selectedPeriodIndex: _selectedPeriodIndex,
+        selectedHourIndex: _selectedHourIndex,
+        selectedMinuteIndex: _selectedMinuteIndex,
+        selectedMeridiemIndex: _selectedMeridiemIndex,
+        remindBefore: _remindBefore,
+      ),
+    );
+  }
+
+  Future<void> _savePlan(BuildContext context) async {
+    final checklistProvider = context.read<ChecklistProvider>();
+    final planProvider = context.read<PlanProvider>();
+
+    if (checklistProvider.items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Add checklist items before creating a plan.'),
+        ),
+      );
+      return;
+    }
+
+    final plan = await planProvider.createPlanFromChecklist(
+      checklistProvider.items,
+    );
+    if (plan == null || !context.mounted) {
+      return;
+    }
+
+    await checklistProvider.clearItems();
+    if (!context.mounted) {
+      return;
+    }
+
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => const HomePage(initialTabIndex: 1),
+      ),
+      (route) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +129,7 @@ class _ReminderPageState extends State<ReminderPage> {
                     setState(() {
                       _selectedPeriodIndex = index;
                     });
+                    _persistDraft();
                   },
                 ),
                 SizedBox(height: getProportionateScreenHeight(20)),
@@ -95,6 +164,7 @@ class _ReminderPageState extends State<ReminderPage> {
                                         setState(() {
                                           _selectedHourIndex = index;
                                         });
+                                        _persistDraft();
                                       },
                                     ),
                                   ),
@@ -118,6 +188,7 @@ class _ReminderPageState extends State<ReminderPage> {
                                         setState(() {
                                           _selectedMinuteIndex = index;
                                         });
+                                        _persistDraft();
                                       },
                                     ),
                                   ),
@@ -129,6 +200,7 @@ class _ReminderPageState extends State<ReminderPage> {
                                         setState(() {
                                           _selectedMeridiemIndex = index;
                                         });
+                                        _persistDraft();
                                       },
                                     ),
                                   ),
@@ -170,6 +242,7 @@ class _ReminderPageState extends State<ReminderPage> {
                                 setState(() {
                                   _remindBefore = value;
                                 });
+                                _persistDraft();
                               },
                             ),
                           ],
@@ -191,7 +264,7 @@ class _ReminderPageState extends State<ReminderPage> {
             borderRadius: BorderRadius.circular(30),
           ),
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: () => _savePlan(context),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.transparent,
               shadowColor: Colors.transparent,

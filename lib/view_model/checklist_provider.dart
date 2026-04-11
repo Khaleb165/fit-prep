@@ -89,6 +89,12 @@ class ChecklistProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> clearItems() async {
+    _items.clear();
+    await _persistItems();
+    notifyListeners();
+  }
+
   Future<void> _persistItems() async {
     await _storage.saveChecklistItems(_items);
   }
