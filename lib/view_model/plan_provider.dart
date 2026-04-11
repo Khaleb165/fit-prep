@@ -20,6 +20,15 @@ class PlanProvider extends ChangeNotifier {
   ReminderSettings get reminderDraft => _reminderDraft;
   List<WorkoutPlan> get plans => List.unmodifiable(_plans);
 
+  WorkoutPlan? getPlanById(String id) {
+    final int index = _plans.indexWhere((plan) => plan.id == id);
+    if (index == -1) {
+      return null;
+    }
+
+    return _plans[index];
+  }
+
   Future<void> updateReminderDraft(ReminderSettings settings) async {
     _reminderDraft = settings;
     await _storage.saveReminderDraft(_reminderDraft);
@@ -60,6 +69,106 @@ class PlanProvider extends ChangeNotifier {
     await _storage.saveReminderDraft(_reminderDraft);
     notifyListeners();
     return plan;
+  }
+
+  Future<void> togglePlanItem(String planId, String itemId) async {
+    final WorkoutPlan? plan = getPlanById(planId);
+    if (plan == null) {
+      return;
+    }
+
+    final int itemIndex = plan.items.indexWhere((item) => item.id == itemId);
+    if (itemIndex == -1) {
+      return;
+    }
+
+    final List<ChecklistItem> updatedItems = List<ChecklistItem>.from(plan.items);
+    final ChecklistItem item = updatedItems[itemIndex];
+    updatedItems[itemIndex] = item.copyWith(isChecked: !item.isChecked);
+
+    await _replacePlan(
+      planId,
+      plan.copyWith(items: updatedItems),
+    );
+  }
+
+  Future<void> updatePlanItem(
+    String planId,
+    String itemId,
+    String title,
+  ) async {
+    final String trimmedTitle = title.trim();
+    if (trimmedTitle.isEmpty) {
+      return;
+    }
+
+    final WorkoutPlan? plan = getPlanById(planId);
+    if (plan == null) {
+      return;
+    }
+
+    final int itemIndex = plan.items.indexWhere((item) => item.id == itemId);
+    if (itemIndex == -1) {
+      return;
+    }
+
+    final List<ChecklistItem> updatedItems = List<ChecklistItem>.from(plan.items);
+    updatedItems[itemIndex] = updatedItems[itemIndex].copyWith(
+      title: trimmedTitle,
+    );
+
+    await _replacePlan(
+      planId,
+      plan.copyWith(items: updatedItems),
+    );
+  }
+
+  Future<void> deletePlanItem(String planId, String itemId) async {
+    final WorkoutPlan? plan = getPlanById(planId);
+    if (plan == null) {
+      return;
+    }
+
+    final List<ChecklistItem> updatedItems = plan.items
+        .where((item) => item.id != itemId)
+        .toList();
+
+    await _replacePlan(
+      planId,
+      plan.copyWith(items: updatedItems),
+    );
+  }
+
+  Future<void> updatePlanReminder(
+    String planId,
+    ReminderSettings reminderSettings,
+  ) async {
+    final WorkoutPlan? plan = getPlanById(planId);
+    if (plan == null) {
+      return;
+    }
+
+    await _replacePlan(
+      planId,
+      plan.copyWith(
+        title: '${reminderSettings.periodLabel} Workout Plan',
+        reminderSettings: reminderSettings,
+      ),
+    );
+  }
+
+  Future<void> _replacePlan(
+    String planId,
+    WorkoutPlan updatedPlan,
+  ) async {
+    final int index = _plans.indexWhere((plan) => plan.id == planId);
+    if (index == -1) {
+      return;
+    }
+
+    _plans[index] = updatedPlan;
+    await _persistPlans();
+    notifyListeners();
   }
 
   Future<void> _persistPlans() async {
