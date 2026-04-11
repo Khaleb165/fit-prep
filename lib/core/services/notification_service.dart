@@ -126,7 +126,10 @@ class NotificationService {
     await _plugin.zonedSchedule(
       _packingNotificationId(plan.id),
       'Pack your gym bag',
-      _packingReminderBody(uncheckedItems),
+      _packingReminderBody(
+        uncheckedItems: uncheckedItems,
+        totalItemCount: plan.items.length,
+      ),
       _nextReminderDate(plan.reminderSettings),
       _notificationDetails(),
       uiLocalNotificationDateInterpretation:
@@ -197,9 +200,17 @@ class NotificationService {
     return minutes[selectedMinuteIndex];
   }
 
-  String _packingReminderBody(List<ChecklistItem> uncheckedItems) {
+  String _packingReminderBody({
+    required List<ChecklistItem> uncheckedItems,
+    required int totalItemCount,
+  }) {
     final List<String> itemTitles =
         uncheckedItems.map((item) => item.title).toList();
+
+    if (itemTitles.isEmpty || uncheckedItems.length == totalItemCount) {
+      return 'Pack for the gym today.';
+    }
+
     final String packedItems = _formatItems(itemTitles);
 
     return itemTitles.length == 1
