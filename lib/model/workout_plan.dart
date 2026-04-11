@@ -16,6 +16,22 @@ class WorkoutPlan {
   final ReminderSettings reminderSettings;
   final DateTime createdAt;
 
+  WorkoutPlan copyWith({
+    String? id,
+    String? title,
+    List<ChecklistItem>? items,
+    ReminderSettings? reminderSettings,
+    DateTime? createdAt,
+  }) {
+    return WorkoutPlan(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      items: items ?? this.items,
+      reminderSettings: reminderSettings ?? this.reminderSettings,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,
