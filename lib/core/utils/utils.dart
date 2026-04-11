@@ -1,3 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../model/checklist_item.dart';
+import '../../view_model/plan_provider.dart';
+
 const List<String> periods = ['Morning', 'Afternoon', 'Evening'];
 const List<String> minutes = [
   '00',
@@ -52,4 +58,67 @@ enum QuickTipDetailMode {
   standard,
   addToChecklist,
   expandableInfo,
+}
+
+// Shows a dialog to add or edit a checklist item. If editing, the existing title is pre-filled in the text field.
+Future<void> showItemDialog(
+  BuildContext context, {
+  required String planId,
+  required ChecklistItem item,
+}) async {
+  final TextEditingController controller = TextEditingController(
+    text: item.title,
+  );
+
+  final String? itemTitle = await showDialog<String>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Edit item'),
+        content: TextField(
+          autofocus: true,
+          controller: controller,
+          textCapitalization: TextCapitalization.sentences,
+          onSubmitted: (submittedValue) {
+            final String trimmedValue = submittedValue.trim();
+            if (trimmedValue.isEmpty) {
+              return;
+            }
+
+            Navigator.of(context).pop(trimmedValue);
+          },
+          decoration: const InputDecoration(
+            hintText: 'Enter item name',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final String trimmedValue = controller.text.trim();
+              if (trimmedValue.isEmpty) {
+                return;
+              }
+
+              Navigator.of(context).pop(trimmedValue);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (itemTitle == null || itemTitle.trim() == item.title.trim()) {
+    return;
+  }
+
+  await context.read<PlanProvider>().updatePlanItem(
+        planId,
+        item.id,
+        itemTitle,
+      );
 }
