@@ -13,6 +13,25 @@ import 'reminder_page.dart';
 class ChecklistPage extends StatelessWidget {
   const ChecklistPage({super.key});
 
+  void _goToReminderPage(BuildContext context) {
+    final List<ChecklistItem> items = context.read<ChecklistProvider>().items;
+    if (items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text('Add items to your checklist before setting a reminder.'),
+        ),
+      );
+      return;
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const ReminderPage(),
+      ),
+    );
+  }
+
   Future<void> _showItemDialog(
     BuildContext context, {
     ChecklistItem? item,
@@ -96,14 +115,11 @@ class ChecklistPage extends StatelessWidget {
       appBar: GradientLogoAppBar(
         actions: [
           IconButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const ReminderPage(),
-                ),
-              );
-            },
-            icon: const Icon(Icons.arrow_forward_rounded),
+            onPressed: () => _goToReminderPage(context),
+            icon: Icon(
+              Icons.add_alert,
+              size: getProportionateScreenHeight(28),
+            ),
             tooltip: 'Continue to reminder',
           ),
         ],

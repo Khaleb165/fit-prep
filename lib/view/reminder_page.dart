@@ -63,7 +63,7 @@ class _ReminderPageState extends State<ReminderPage> {
     if (checklistProvider.items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Add checklist items before creating a plan.'),
+          content: Text('Add items to your checklist first before saving a reminder.'),
         ),
       );
       return;
