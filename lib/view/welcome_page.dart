@@ -39,6 +39,7 @@ class WelcomePage extends StatelessWidget {
               SizedBox(height: getProportionateScreenHeight(30)),
               Image.asset(
                 'assets/images/appbar-logo.png',
+                height: 60,
               ),
               SizedBox(height: getProportionateScreenHeight(20)),
               const Text(

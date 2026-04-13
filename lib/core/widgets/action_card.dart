@@ -56,7 +56,7 @@ class ActionCard extends StatelessWidget {
             subtitle,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: getProportionateScreenHeight(12),
+              fontSize: getProportionateScreenHeight(10),
               color: AppColors.textSecondary,
             ),
           ),
