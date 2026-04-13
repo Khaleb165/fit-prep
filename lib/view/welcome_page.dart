@@ -2,6 +2,7 @@ import 'package:fit_prep/core/constants/size_config.dart';
 import 'package:fit_prep/data/offline/hive.dart';
 import 'package:fit_prep/view/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:svg_flutter/svg.dart';
 
 import '../core/theme/app_colors.dart';
 
