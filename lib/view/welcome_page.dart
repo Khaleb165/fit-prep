@@ -61,11 +61,11 @@ class WelcomePage extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Image.asset(
-                  'assets/images/welcome-logo.png',
-                  fit: BoxFit.cover,
-                  height: getProportionateScreenHeight(350),
-                  scale: 0.5,
+                child: Expanded(
+                  child: SvgPicture.asset(
+                    'assets/images/welcome-logo.svg',
+                    // height: getProportionateScreenHeight(350),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
