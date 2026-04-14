@@ -47,7 +47,7 @@ class ReminderCard extends StatelessWidget {
               ),
               SizedBox(height: getProportionateScreenHeight(12)),
               Text(
-                'Session: ${plan.reminderSettings.periodLabel}',
+                'Gym Session: ${plan.reminderSettings.periodLabel}',
                 style: TextStyle(
                   fontSize: getProportionateScreenHeight(14),
                   color: AppColors.textSecondary,
@@ -56,7 +56,7 @@ class ReminderCard extends StatelessWidget {
               ),
               SizedBox(height: getProportionateScreenHeight(10)),
               Text(
-                'Workout time: ${plan.reminderSettings.timeLabel}',
+                'Packing time: ${plan.reminderSettings.formatTime(context)}',
                 style: TextStyle(
                   fontSize: getProportionateScreenHeight(14),
                   color: AppColors.textSecondary,

@@ -93,7 +93,7 @@ class PlansTab extends StatelessWidget {
                       ),
                       SizedBox(height: getProportionateScreenHeight(8)),
                       Text(
-                        '${plan.reminderSettings.periodLabel} • ${plan.reminderSettings.timeLabel}',
+                        '${plan.reminderSettings.periodLabel} • ${plan.reminderSettings.formatTime(context)}',
                         style: TextStyle(
                           fontSize: getProportionateScreenHeight(14),
                           color: AppColors.textSecondary,

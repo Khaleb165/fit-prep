@@ -25,9 +25,7 @@ class PlanDetailPage extends StatelessWidget {
     WorkoutPlan plan,
   ) async {
     int selectedPeriodIndex = plan.reminderSettings.selectedPeriodIndex;
-    int selectedHourIndex = plan.reminderSettings.selectedHourIndex;
-    int selectedMinuteIndex = plan.reminderSettings.selectedMinuteIndex;
-    int selectedMeridiemIndex = plan.reminderSettings.selectedMeridiemIndex;
+    TimeOfDay selectedTime = plan.reminderSettings.timeOfDay;
     bool remindBefore = plan.reminderSettings.remindBefore;
 
     final ReminderSettings? updatedSettings =
@@ -66,86 +64,45 @@ class PlanDetailPage extends StatelessWidget {
                       },
                     ),
                     SizedBox(height: getProportionateScreenHeight(10)),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: DropdownButtonFormField<int>(
-                            value: selectedHourIndex,
-                            decoration: const InputDecoration(
-                              labelText: 'Hour',
-                            ),
-                            items: List<DropdownMenuItem<int>>.generate(
-                              12,
-                              (index) => DropdownMenuItem<int>(
-                                value: index,
-                                child: Text('${index + 1}'),
-                              ),
-                            ),
-                            onChanged: (value) {
-                              if (value == null) {
-                                return;
-                              }
+                    Text(
+                      'Packing time',
+                      style: TextStyle(
+                        fontSize: getProportionateScreenHeight(14),
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    SizedBox(height: getProportionateScreenHeight(10)),
+                    OutlinedButton(
+                      onPressed: () async {
+                        final TimeOfDay? pickedTime = await showTimePicker(
+                          context: context,
+                          initialTime: selectedTime,
+                        );
 
-                              setState(() {
-                                selectedHourIndex = value;
-                              });
-                            },
-                          ),
-                        ),
-                        SizedBox(width: getProportionateScreenHeight(10)),
-                        Expanded(
-                          child: DropdownButtonFormField<int>(
-                            value: selectedMinuteIndex,
-                            decoration: const InputDecoration(
-                              labelText: 'Minute',
-                            ),
-                            items: List<DropdownMenuItem<int>>.generate(
-                              minutes.length,
-                              (index) => DropdownMenuItem<int>(
-                                value: index,
-                                child: Text(minutes[index]),
-                              ),
-                            ),
-                            onChanged: (value) {
-                              if (value == null) {
-                                return;
-                              }
+                        if (pickedTime == null) {
+                          return;
+                        }
 
-                              setState(() {
-                                selectedMinuteIndex = value;
-                              });
-                            },
-                          ),
+                        setState(() {
+                          selectedTime = pickedTime;
+                        });
+                      },
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 52),
+                        alignment: Alignment.centerLeft,
+                      ),
+                      child: Text(
+                        MaterialLocalizations.of(context).formatTimeOfDay(
+                          selectedTime,
+                          alwaysUse24HourFormat:
+                              MediaQuery.of(context).alwaysUse24HourFormat,
                         ),
-                        SizedBox(width: getProportionateScreenHeight(10)),
-                        Expanded(
-                          child: DropdownButtonFormField<int>(
-                            value: selectedMeridiemIndex,
-                            decoration: const InputDecoration(
-                              labelText: 'AM/PM',
-                            ),
-                            items: const [
-                              DropdownMenuItem<int>(
-                                value: 0,
-                                child: Text('AM'),
-                              ),
-                              DropdownMenuItem<int>(
-                                value: 1,
-                                child: Text('PM'),
-                              ),
-                            ],
-                            onChanged: (value) {
-                              if (value == null) {
-                                return;
-                              }
-
-                              setState(() {
-                                selectedMeridiemIndex = value;
-                              });
-                            },
-                          ),
+                        style: TextStyle(
+                          fontSize: getProportionateScreenHeight(16),
+                          color: AppColors.textPrimary,
                         ),
-                      ],
+                      ),
                     ),
                     SizedBox(height: getProportionateScreenHeight(10)),
                     SwitchListTile(
@@ -171,9 +128,8 @@ class PlanDetailPage extends StatelessWidget {
                     Navigator.of(context).pop(
                       ReminderSettings(
                         selectedPeriodIndex: selectedPeriodIndex,
-                        selectedHourIndex: selectedHourIndex,
-                        selectedMinuteIndex: selectedMinuteIndex,
-                        selectedMeridiemIndex: selectedMeridiemIndex,
+                        hour: selectedTime.hour,
+                        minute: selectedTime.minute,
                         remindBefore: remindBefore,
                       ),
                     );

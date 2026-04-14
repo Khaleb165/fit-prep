@@ -6,7 +6,6 @@ import '../core/theme/app_colors.dart';
 import '../core/utils/utils.dart';
 import '../core/widgets/gradient_logo_app_bar.dart';
 import '../core/widgets/reminder_period_selector.dart';
-import '../core/widgets/time_wheel.dart';
 import '../view_model/checklist_provider.dart';
 import '../view_model/plan_provider.dart';
 import 'home_screen.dart';
@@ -22,9 +21,7 @@ class _ReminderPageState extends State<ReminderPage> {
   late final PlanProvider _planProvider;
   bool _didLoadInitialState = false;
   int _selectedPeriodIndex = 0;
-  int _selectedHourIndex = 6;
-  int _selectedMinuteIndex = 0;
-  int _selectedMeridiemIndex = 0;
+  TimeOfDay _selectedTime = const TimeOfDay(hour: 7, minute: 0);
   bool _remindBefore = true;
 
   @override
@@ -37,9 +34,7 @@ class _ReminderPageState extends State<ReminderPage> {
     _planProvider = context.read<PlanProvider>();
     final reminderDraft = _planProvider.reminderDraft;
     _selectedPeriodIndex = reminderDraft.selectedPeriodIndex;
-    _selectedHourIndex = reminderDraft.selectedHourIndex;
-    _selectedMinuteIndex = reminderDraft.selectedMinuteIndex;
-    _selectedMeridiemIndex = reminderDraft.selectedMeridiemIndex;
+    _selectedTime = reminderDraft.timeOfDay;
     _remindBefore = reminderDraft.remindBefore;
     _didLoadInitialState = true;
   }
@@ -48,12 +43,27 @@ class _ReminderPageState extends State<ReminderPage> {
     await _planProvider.updateReminderDraft(
       _planProvider.reminderDraft.copyWith(
         selectedPeriodIndex: _selectedPeriodIndex,
-        selectedHourIndex: _selectedHourIndex,
-        selectedMinuteIndex: _selectedMinuteIndex,
-        selectedMeridiemIndex: _selectedMeridiemIndex,
+        hour: _selectedTime.hour,
+        minute: _selectedTime.minute,
         remindBefore: _remindBefore,
       ),
     );
+  }
+
+  Future<void> _pickTime() async {
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime,
+    );
+
+    if (pickedTime == null) {
+      return;
+    }
+
+    setState(() {
+      _selectedTime = pickedTime;
+    });
+    await _persistDraft();
   }
 
   Future<void> _savePlan(BuildContext context) async {
@@ -149,60 +159,60 @@ class _ReminderPageState extends State<ReminderPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SizedBox(height: getProportionateScreenHeight(15)),
-                            SizedBox(
-                              height: 220,
+                            Text(
+                              'Packing time',
+                              style: TextStyle(
+                                fontSize: getProportionateScreenHeight(15),
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            SizedBox(height: getProportionateScreenHeight(14)),
+                            OutlinedButton(
+                              onPressed: _pickTime,
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 18,
+                                ),
+                                side: const BorderSide(
+                                  color: AppColors.borderDivider,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                ),
+                              ),
                               child: Row(
                                 children: [
-                                  Expanded(
-                                    child: TimeWheel(
-                                      items: List<String>.generate(
-                                        12,
-                                        (index) => '${index + 1}',
-                                      ),
-                                      initialIndex: _selectedHourIndex,
-                                      onSelectedItemChanged: (index) {
-                                        setState(() {
-                                          _selectedHourIndex = index;
-                                        });
-                                        _persistDraft();
-                                      },
-                                    ),
+                                  const Icon(
+                                    Icons.schedule_outlined,
+                                    color: AppColors.deepBlue,
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 8),
+                                  const SizedBox(width: 12),
+                                  Expanded(
                                     child: Text(
-                                      ':',
+                                      MaterialLocalizations.of(context)
+                                          .formatTimeOfDay(
+                                        _selectedTime,
+                                        alwaysUse24HourFormat:
+                                            MediaQuery.of(context)
+                                                .alwaysUse24HourFormat,
+                                      ),
                                       style: TextStyle(
                                         fontSize:
-                                            getProportionateScreenHeight(28),
+                                            getProportionateScreenHeight(24),
                                         fontWeight: FontWeight.w700,
                                         color: AppColors.textPrimary,
                                       ),
                                     ),
                                   ),
-                                  Expanded(
-                                    child: TimeWheel(
-                                      items: minutes,
-                                      initialIndex: _selectedMinuteIndex,
-                                      onSelectedItemChanged: (index) {
-                                        setState(() {
-                                          _selectedMinuteIndex = index;
-                                        });
-                                        _persistDraft();
-                                      },
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: TimeWheel(
-                                      items: const ['AM', 'PM'],
-                                      initialIndex: _selectedMeridiemIndex,
-                                      onSelectedItemChanged: (index) {
-                                        setState(() {
-                                          _selectedMeridiemIndex = index;
-                                        });
-                                        _persistDraft();
-                                      },
+                                  Text(
+                                    'Change',
+                                    style: TextStyle(
+                                      fontSize:
+                                          getProportionateScreenHeight(14),
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.deepBlue,
                                     ),
                                   ),
                                 ],
