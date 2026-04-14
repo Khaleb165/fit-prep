@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/constants/size_config.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/delete_background.dart';
 import '../plan_detail_page.dart';
 import '../../view_model/plan_provider.dart';
 
