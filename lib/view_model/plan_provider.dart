@@ -21,6 +21,20 @@ class PlanProvider extends ChangeNotifier {
 
   ReminderSettings get reminderDraft => _reminderDraft;
   List<WorkoutPlan> get plans => List.unmodifiable(_plans);
+  WorkoutPlan? get latestPlan {
+    if (_plans.isEmpty) {
+      return null;
+    }
+
+    WorkoutPlan latest = _plans.first;
+    for (final WorkoutPlan plan in _plans.skip(1)) {
+      if (plan.createdAt.isAfter(latest.createdAt)) {
+        latest = plan;
+      }
+    }
+
+    return latest;
+  }
 
   Future<void> _initializePlanState() async {
     await _applyDailyChecklistResets();
