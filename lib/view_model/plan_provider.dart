@@ -285,6 +285,18 @@ class PlanProvider extends ChangeNotifier {
     );
   }
 
+  Future<void> deletePlan(String planId) async {
+    final int index = _plans.indexWhere((plan) => plan.id == planId);
+    if (index == -1) {
+      return;
+    }
+
+    _plans.removeAt(index);
+    await _persistPlans();
+    await NotificationService.instance.cancelPlanNotifications(planId);
+    notifyListeners();
+  }
+
   Future<void> _replacePlan(
     String planId,
     WorkoutPlan updatedPlan,
