@@ -6,9 +6,11 @@ import '../core/theme/app_colors.dart';
 import '../core/utils/utils.dart';
 import '../core/widgets/gradient_logo_app_bar.dart';
 import '../core/widgets/reminder_period_selector.dart';
+import '../model/workout_plan.dart';
 import '../view_model/checklist_provider.dart';
 import '../view_model/plan_provider.dart';
 import 'home_screen.dart';
+import 'plan_detail_page.dart';
 
 class ReminderPage extends StatefulWidget {
   const ReminderPage({super.key});
@@ -103,6 +105,7 @@ class _ReminderPageState extends State<ReminderPage> {
   @override
   Widget build(BuildContext context) {
     ScreenSize().init(context);
+    final WorkoutPlan? latestPlan = context.watch<PlanProvider>().latestPlan;
 
     return Scaffold(
       appBar: const GradientLogoAppBar(),
@@ -259,6 +262,63 @@ class _ReminderPageState extends State<ReminderPage> {
                           ],
                         ),
                       ),
+                      if (latestPlan != null) ...[
+                        SizedBox(height: getProportionateScreenHeight(18)),
+                        Material(
+                          color: AppColors.cardWhite,
+                          borderRadius: BorderRadius.circular(24),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(24),
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      PlanDetailPage(plan: latestPlan),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 18,
+                                vertical: 16,
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 42,
+                                    height: 42,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.backgroundLightGrey,
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    child: const Icon(
+                                      Icons.notifications_none_rounded,
+                                      color: AppColors.deepBlue,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Text(
+                                      'Reminder set for ${latestPlan.reminderSettings.formatTime(context)}',
+                                      style: TextStyle(
+                                        fontSize:
+                                            getProportionateScreenHeight(15),
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.arrow_forward_ios,
+                                    size: 18,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
