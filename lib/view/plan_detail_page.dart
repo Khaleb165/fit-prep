@@ -8,6 +8,7 @@ import '../core/widgets/checklist_tile.dart';
 import '../core/widgets/delete_background.dart';
 import '../core/widgets/gradient_logo_app_bar.dart';
 import '../core/widgets/reminder_card.dart';
+import '../model/checklist_item.dart';
 import '../model/reminder_settings.dart';
 import '../model/workout_plan.dart';
 import '../view_model/plan_provider.dart';
@@ -218,47 +219,135 @@ class PlanDetailPage extends StatelessWidget {
                       color: AppColors.textSecondary,
                     ),
                   )
-                else
-                  ...currentPlan.items.map(
-                    (item) => Padding(
-                      padding: EdgeInsets.only(
-                        bottom: getProportionateScreenHeight(10),
-                      ),
-                      child: Dismissible(
-                        key: ValueKey('${currentPlan.id}-${item.id}'),
-                        direction: DismissDirection.horizontal,
-                        onDismissed: (_) {
-                          context.read<PlanProvider>().deletePlanItem(
-                                currentPlan.id,
-                                item.id,
-                              );
-                        },
-                        background: const DeleteBackground(
-                          alignment: Alignment.centerLeft,
-                        ),
-                        secondaryBackground: const DeleteBackground(
-                          alignment: Alignment.centerRight,
-                        ),
-                        child: ChecklistTile(
-                          title: item.title,
-                          isChecked: item.isChecked,
-                          onToggle: () =>
-                              context.read<PlanProvider>().togglePlanItem(
+                else ...[
+                  ...currentPlan.items.where((item) => !item.isChecked).map(
+                        (item) => Padding(
+                          padding: EdgeInsets.only(
+                            bottom: getProportionateScreenHeight(10),
+                          ),
+                          child: Dismissible(
+                            key: ValueKey('${currentPlan.id}-${item.id}'),
+                            direction: DismissDirection.horizontal,
+                            onDismissed: (_) {
+                              context.read<PlanProvider>().deletePlanItem(
                                     currentPlan.id,
                                     item.id,
-                                  ),
-                          onTap: () => showItemDialog(
-                            context,
-                            planId: currentPlan.id,
-                            item: item,
+                                  );
+                            },
+                            background: const DeleteBackground(
+                              alignment: Alignment.centerLeft,
+                            ),
+                            secondaryBackground: const DeleteBackground(
+                              alignment: Alignment.centerRight,
+                            ),
+                            child: ChecklistTile(
+                              title: item.title,
+                              isChecked: item.isChecked,
+                              onToggle: () =>
+                                  context.read<PlanProvider>().togglePlanItem(
+                                        currentPlan.id,
+                                        item.id,
+                                      ),
+                              onTap: () => showItemDialog(
+                                context,
+                                planId: currentPlan.id,
+                                item: item,
+                              ),
+                            ),
                           ),
                         ),
                       ),
+                  if (currentPlan.items.any((item) => item.isChecked))
+                    _CompletedItemsSection(
+                      plan: currentPlan,
                     ),
-                  ),
+                ],
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CompletedItemsSection extends StatelessWidget {
+  const _CompletedItemsSection({
+    required this.plan,
+  });
+
+  final WorkoutPlan plan;
+
+  @override
+  Widget build(BuildContext context) {
+    final List<ChecklistItem> completedItems =
+        plan.items.where((item) => item.isChecked).toList(growable: false);
+
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: Container(
+        margin: EdgeInsets.only(top: getProportionateScreenHeight(4)),
+        decoration: BoxDecoration(
+          color: AppColors.cardWhite,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+          childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 14),
+          title: Text(
+            'Completed items (${completedItems.length})',
+            style: TextStyle(
+              fontSize: getProportionateScreenHeight(15),
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          subtitle: Text(
+            'Hidden until you expand them.',
+            style: TextStyle(
+              fontSize: getProportionateScreenHeight(13),
+              color: AppColors.textSecondary,
+            ),
+          ),
+          children: completedItems
+              .map<Widget>(
+                (item) => Padding(
+                  padding: EdgeInsets.only(
+                    bottom: getProportionateScreenHeight(10),
+                  ),
+                  child: Dismissible(
+                    key: ValueKey('${plan.id}-${item.id}-completed'),
+                    direction: DismissDirection.horizontal,
+                    onDismissed: (_) {
+                      context.read<PlanProvider>().deletePlanItem(
+                            plan.id,
+                            item.id,
+                          );
+                    },
+                    background: const DeleteBackground(
+                      alignment: Alignment.centerLeft,
+                    ),
+                    secondaryBackground: const DeleteBackground(
+                      alignment: Alignment.centerRight,
+                    ),
+                    child: ChecklistTile(
+                      title: item.title,
+                      isChecked: item.isChecked,
+                      onToggle: () =>
+                          context.read<PlanProvider>().togglePlanItem(
+                                plan.id,
+                                item.id,
+                              ),
+                      onTap: () => showItemDialog(
+                        context,
+                        planId: plan.id,
+                        item: item,
+                      ),
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
         ),
       ),
     );
