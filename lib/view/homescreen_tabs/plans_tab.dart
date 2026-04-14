@@ -40,49 +40,77 @@ class PlansTab extends StatelessWidget {
       itemBuilder: (context, index) {
         final plan = plans[index];
 
-        return Material(
-          color: AppColors.cardWhite,
-          borderRadius: BorderRadius.circular(24),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(24),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => PlanDetailPage(plan: plan),
+        return Dismissible(
+          key: ValueKey(plan.id),
+          direction: DismissDirection.horizontal,
+          background: const DeleteBackground(
+            alignment: Alignment.centerLeft,
+          ),
+          secondaryBackground: const DeleteBackground(
+            alignment: Alignment.centerRight,
+          ),
+          onDismissed: (_) async {
+            await context.read<PlanProvider>().deletePlan(plan.id);
+
+            if (!context.mounted) {
+              return;
+            }
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${plan.title} deleted.'),
+              ),
+            );
+          },
+          child: SizedBox(
+            width: double.infinity,
+            child: Material(
+              color: AppColors.cardWhite,
+              elevation: 2,
+              shadowColor: AppColors.textSecondary.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(24),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(24),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => PlanDetailPage(plan: plan),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        plan.title,
+                        style: TextStyle(
+                          fontSize: getProportionateScreenHeight(18),
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      SizedBox(height: getProportionateScreenHeight(8)),
+                      Text(
+                        '${plan.reminderSettings.periodLabel} • ${plan.reminderSettings.timeLabel}',
+                        style: TextStyle(
+                          fontSize: getProportionateScreenHeight(14),
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      SizedBox(height: getProportionateScreenHeight(6)),
+                      Text(
+                        '${plan.items.length} items • Reminder ${plan.reminderSettings.reminderLabel}',
+                        style: TextStyle(
+                          fontSize: getProportionateScreenHeight(13),
+                          color: AppColors.deepBlue,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              );
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    plan.title,
-                    style: TextStyle(
-                      fontSize: getProportionateScreenHeight(18),
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  SizedBox(height: getProportionateScreenHeight(8)),
-                  Text(
-                    '${plan.reminderSettings.periodLabel} • ${plan.reminderSettings.timeLabel}',
-                    style: TextStyle(
-                      fontSize: getProportionateScreenHeight(14),
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  SizedBox(height: getProportionateScreenHeight(6)),
-                  Text(
-                    '${plan.items.length} items • Reminder ${plan.reminderSettings.reminderLabel}',
-                    style: TextStyle(
-                      fontSize: getProportionateScreenHeight(13),
-                      color: AppColors.deepBlue,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
               ),
             ),
           ),
