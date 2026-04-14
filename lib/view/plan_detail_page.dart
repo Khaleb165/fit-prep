@@ -295,18 +295,11 @@ class _CompletedItemsSection extends StatelessWidget {
           tilePadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
           childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 14),
           title: Text(
-            'Completed items (${completedItems.length})',
+            'Completed (${completedItems.length})',
             style: TextStyle(
               fontSize: getProportionateScreenHeight(15),
               fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
-            ),
-          ),
-          subtitle: Text(
-            'Hidden until you expand them.',
-            style: TextStyle(
-              fontSize: getProportionateScreenHeight(13),
-              color: AppColors.textSecondary,
             ),
           ),
           children: completedItems
