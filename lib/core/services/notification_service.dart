@@ -1,4 +1,3 @@
-import 'package:fit_prep/core/utils/utils.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -163,18 +162,12 @@ class NotificationService {
   }
 
   tz.TZDateTime _nextReminderDate(ReminderSettings settings) {
-    final int gymHour = _to24Hour(
-      settings.selectedHourIndex + 1,
-      settings.selectedMeridiemIndex == 0,
-    );
-    final int minute = int.parse(_minuteValue(settings.selectedMinuteIndex));
-
     DateTime reminderTime = DateTime(
       DateTime.now().year,
       DateTime.now().month,
       DateTime.now().day,
-      gymHour,
-      minute,
+      settings.hour,
+      settings.minute,
     );
 
     if (settings.remindBefore) {
@@ -187,19 +180,6 @@ class NotificationService {
 
     return tz.TZDateTime.from(reminderTime, tz.local);
   }
-
-  int _to24Hour(int hour, bool isAm) {
-    if (isAm) {
-      return hour == 12 ? 0 : hour;
-    }
-
-    return hour == 12 ? 12 : hour + 12;
-  }
-
-  String _minuteValue(int selectedMinuteIndex) {
-    return minutes[selectedMinuteIndex];
-  }
-
   String _packingReminderBody({
     required List<ChecklistItem> uncheckedItems,
     required int totalItemCount,
