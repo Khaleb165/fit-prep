@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 
 import '../core/services/notification_service.dart';
-import '../core/utils/utils.dart';
 import '../data/offline/hive.dart';
 import '../model/checklist_item.dart';
 import '../model/reminder_settings.dart';
@@ -109,18 +108,12 @@ class PlanProvider extends ChangeNotifier {
     ReminderSettings settings,
     DateTime now,
   ) {
-    final int gymHour = _to24Hour(
-      settings.selectedHourIndex + 1,
-      settings.selectedMeridiemIndex == 0,
-    );
-    final int gymMinute = int.parse(minutes[settings.selectedMinuteIndex]);
-
     DateTime workoutDateTime = DateTime(
       now.year,
       now.month,
       now.day,
-      gymHour,
-      gymMinute,
+      settings.hour,
+      settings.minute,
     );
 
     if (!workoutDateTime.isAfter(now)) {
@@ -129,15 +122,6 @@ class PlanProvider extends ChangeNotifier {
 
     return workoutDateTime;
   }
-
-  int _to24Hour(int hour, bool isAm) {
-    if (isAm) {
-      return hour == 12 ? 0 : hour;
-    }
-
-    return hour == 12 ? 12 : hour + 12;
-  }
-
   String _dateKey(DateTime dateTime) {
     final String month = dateTime.month.toString().padLeft(2, '0');
     final String day = dateTime.day.toString().padLeft(2, '0');
