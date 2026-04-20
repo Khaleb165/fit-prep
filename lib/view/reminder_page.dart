@@ -22,6 +22,7 @@ class ReminderPage extends StatefulWidget {
 class _ReminderPageState extends State<ReminderPage> {
   late final PlanProvider _planProvider;
   bool _didLoadInitialState = false;
+  bool _isSaving = false;
   int _selectedPeriodIndex = 0;
   TimeOfDay _selectedTime = const TimeOfDay(hour: 7, minute: 0);
   bool _remindBefore = true;
@@ -69,6 +70,10 @@ class _ReminderPageState extends State<ReminderPage> {
   }
 
   Future<void> _savePlan(BuildContext context) async {
+    if (_isSaving) {
+      return;
+    }
+
     final checklistProvider = context.read<ChecklistProvider>();
     final planProvider = context.read<PlanProvider>();
 
@@ -82,24 +87,36 @@ class _ReminderPageState extends State<ReminderPage> {
       return;
     }
 
-    final plan = await planProvider.createPlanFromChecklist(
-      checklistProvider.items,
-    );
-    if (plan == null || !context.mounted) {
-      return;
-    }
+    setState(() {
+      _isSaving = true;
+    });
 
-    await checklistProvider.clearItems();
-    if (!context.mounted) {
-      return;
-    }
+    try {
+      final plan = await planProvider.createPlanFromChecklist(
+        checklistProvider.items,
+      );
+      if (plan == null || !context.mounted) {
+        return;
+      }
 
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (context) => const HomePage(initialTabIndex: 1),
-      ),
-      (route) => false,
-    );
+      await checklistProvider.clearItems();
+      if (!context.mounted) {
+        return;
+      }
+
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => const HomePage(initialTabIndex: 1),
+        ),
+        (route) => false,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
   }
 
   @override
@@ -337,7 +354,7 @@ class _ReminderPageState extends State<ReminderPage> {
               borderRadius: BorderRadius.circular(30),
             ),
             child: ElevatedButton(
-              onPressed: () => _savePlan(context),
+              onPressed: _isSaving ? null : () => _savePlan(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
                 shadowColor: Colors.transparent,
@@ -347,13 +364,25 @@ class _ReminderPageState extends State<ReminderPage> {
                   borderRadius: BorderRadius.circular(30),
                 ),
               ),
-              child: const Text(
-                'Save Reminder',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
+              child: _isSaving
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Colors.white,
+                        ),
+                      ),
+                    )
+                  : const Text(
+                      'Save Reminder',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+              
             ),
           ),
         ),
