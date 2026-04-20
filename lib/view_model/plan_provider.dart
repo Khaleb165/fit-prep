@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
 import '../core/services/notification_service.dart';
 import '../data/offline/hive.dart';
@@ -6,12 +6,13 @@ import '../model/checklist_item.dart';
 import '../model/reminder_settings.dart';
 import '../model/workout_plan.dart';
 
-class PlanProvider extends ChangeNotifier {
+class PlanProvider extends ChangeNotifier with WidgetsBindingObserver {
   PlanProvider({
     required HiveStorage storage,
   }) : _storage = storage {
     _reminderDraft = _storage.getReminderDraft();
     _plans = _storage.getWorkoutPlans();
+    WidgetsBinding.instance.addObserver(this);
     _initializePlanState();
   }
 
@@ -39,6 +40,13 @@ class PlanProvider extends ChangeNotifier {
   Future<void> _initializePlanState() async {
     await _applyDailyChecklistResets();
     await _syncNotifications();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _initializePlanState();
+    }
   }
 
   Future<void> _syncNotifications() async {
@@ -312,5 +320,11 @@ class PlanProvider extends ChangeNotifier {
 
   Future<void> _persistPlans() async {
     await _storage.saveWorkoutPlans(_plans);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 }
