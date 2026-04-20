@@ -20,8 +20,13 @@ class NotificationService {
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
+  bool _isInitialized = false;
 
   Future<void> init() async {
+    if (_isInitialized) {
+      return;
+    }
+
     tz.initializeTimeZones();
     await _configureLocalTimezone();
 
@@ -40,27 +45,51 @@ class NotificationService {
     );
 
     await _plugin.initialize(settings);
-    await _requestPermissions();
+    _isInitialized = true;
+  }
+
+  Future<void> ensurePermissions() async {
+    if (!_isInitialized) {
+      await init();
+    }
+
+    try {
+      await _requestPermissions();
+    } catch (_) {
+      // Permission requests should never block app usage.
+    }
   }
 
   Future<void> showPlanCreatedNotification(WorkoutPlan plan) async {
-    await _plugin.show(
-      _successNotificationId(plan.id),
-      'Plan created',
-      '${plan.title} has been saved successfully.',
-      _notificationDetails(),
-    );
+    try {
+      await _plugin.show(
+        _successNotificationId(plan.id),
+        'Plan created',
+        '${plan.title} has been saved successfully.',
+        _notificationDetails(),
+      );
+    } catch (_) {
+      // Notification failures should not block the save flow.
+    }
   }
 
   Future<void> schedulePlanNotifications(WorkoutPlan plan) async {
-    await cancelPlanNotifications(plan.id);
-    await _scheduleWorkoutReminder(plan);
-    await _schedulePackingReminder(plan);
+    try {
+      await cancelPlanNotifications(plan.id);
+      await _scheduleWorkoutReminder(plan);
+      await _schedulePackingReminder(plan);
+    } catch (_) {
+      // Scheduling should fail softly so the rest of the app keeps working.
+    }
   }
 
   Future<void> cancelPlanNotifications(String planId) async {
-    await _plugin.cancel(_reminderNotificationId(planId));
-    await _plugin.cancel(_packingNotificationId(planId));
+    try {
+      await _plugin.cancel(_reminderNotificationId(planId));
+      await _plugin.cancel(_packingNotificationId(planId));
+    } catch (_) {
+      // Ignore cancellation failures from stale or missing notifications.
+    }
   }
 
   Future<void> syncPlans(List<WorkoutPlan> plans) async {
