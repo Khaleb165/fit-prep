@@ -24,7 +24,7 @@ Future<void> main() async {
   );
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends StatefulWidget {
   const MainApp({
     required this.showWelcomePage,
     required this.storage,
@@ -35,20 +35,33 @@ class MainApp extends StatelessWidget {
   final HiveStorage storage;
 
   @override
+  State<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends State<MainApp> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NotificationService.instance.ensurePermissions();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => ChecklistProvider(storage: storage),
+          create: (_) => ChecklistProvider(storage: widget.storage),
         ),
         ChangeNotifierProvider(
-          create: (_) => PlanProvider(storage: storage),
+          create: (_) => PlanProvider(storage: widget.storage),
         ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: buildAppTheme(),
-        home: showWelcomePage ? const WelcomePage() : const HomePage(),
+        home: widget.showWelcomePage ? const WelcomePage() : const HomePage(),
       ),
     );
   }
