@@ -1,6 +1,7 @@
 import 'package:fit_prep/view/home_screen.dart';
 import 'package:fit_prep/view/welcome_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'view_model/checklist_provider.dart';
@@ -15,6 +16,11 @@ Future<void> main() async {
   final HiveStorage storage = HiveStorage.instance;
   await storage.init();
   await NotificationService.instance.init();
+
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   runApp(
     MainApp(
