@@ -87,6 +87,7 @@ class NotificationService {
     try {
       await _plugin.cancel(_reminderNotificationId(planId));
       await _plugin.cancel(_packingNotificationId(planId));
+      await _plugin.cancel(_forgotPackingNotificationId(planId));
     } catch (_) {
       // Ignore cancellation failures from stale or missing notifications.
     }
@@ -115,8 +116,8 @@ class NotificationService {
   }
 
   Future<void> _requestPermissions() async {
-    final AndroidFlutterLocalNotificationsPlugin? androidPlugin = _plugin
-        .resolvePlatformSpecificImplementation<
+    final AndroidFlutterLocalNotificationsPlugin? androidPlugin =
+        _plugin.resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>();
     await androidPlugin?.requestNotificationsPermission();
     await androidPlugin?.requestExactAlarmsPermission();
@@ -158,6 +159,7 @@ class NotificationService {
 
     if (uncheckedItems.isEmpty) {
       await _plugin.cancel(_packingNotificationId(plan.id));
+      await _plugin.cancel(_forgotPackingNotificationId(plan.id));
       return;
     }
 
@@ -177,6 +179,9 @@ class NotificationService {
           : AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
     );
+
+    // Schedule follow-up notification for forgotten items 30 minutes after packing reminder
+    await _scheduleForgottenItemsNotification(plan, uncheckedItems);
   }
 
   NotificationDetails _notificationDetails() {
@@ -221,6 +226,7 @@ class NotificationService {
 
     return tz.TZDateTime.from(reminderTime, tz.local);
   }
+
   String _packingReminderBody({
     required List<ChecklistItem> uncheckedItems,
     required int totalItemCount,
@@ -261,5 +267,49 @@ class NotificationService {
   int _packingNotificationId(String planId) =>
       (_baseNotificationId(planId) + 1) & 0x7fffffff;
 
+  int _forgotPackingNotificationId(String planId) =>
+      (_baseNotificationId(planId) + 3) & 0x7fffffff;
+
   int _baseNotificationId(String planId) => planId.hashCode.abs() * 10;
+
+  Future<void> _scheduleForgottenItemsNotification(
+    WorkoutPlan plan,
+    List<ChecklistItem> uncheckedItems,
+  ) async {
+    final ReminderSettings settings = plan.reminderSettings;
+    final tz.TZDateTime packingReminderTime = _nextReminderDate(settings);
+    final tz.TZDateTime followUpTime =
+        packingReminderTime.add(const Duration(minutes: 30));
+
+    if (uncheckedItems.isEmpty) {
+      return;
+    }
+
+    final String notificationBody =
+        _formatForgottenItemsMessage(uncheckedItems);
+    final bool canScheduleExact = await _canScheduleExactAlarms();
+
+    await _plugin.zonedSchedule(
+      _forgotPackingNotificationId(plan.id),
+      'Packing reminder',
+      notificationBody,
+      followUpTime,
+      _notificationDetails(),
+      androidScheduleMode: canScheduleExact
+          ? AndroidScheduleMode.exactAllowWhileIdle
+          : AndroidScheduleMode.inexactAllowWhileIdle,
+    );
+  }
+
+  String _formatForgottenItemsMessage(List<ChecklistItem> uncheckedItems) {
+    final List<String> itemTitles =
+        uncheckedItems.map((item) => item.title).toList();
+
+    if (itemTitles.isEmpty) {
+      return 'You still haven\'t packed for the gym.';
+    }
+
+    final String items = itemTitles.join(', ');
+    return 'You forgot: $items.';
+  }
 }
