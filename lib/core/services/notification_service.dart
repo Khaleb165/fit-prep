@@ -98,6 +98,13 @@ class NotificationService {
     }
   }
 
+  Future<bool> _canScheduleExactAlarms() async {
+    final AndroidFlutterLocalNotificationsPlugin? androidPlugin =
+        _plugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+    return await androidPlugin?.canScheduleExactNotifications() ?? false;
+  }
+
   Future<void> _configureLocalTimezone() async {
     try {
       final String timezoneName = await FlutterTimezone.getLocalTimezone();
@@ -128,6 +135,8 @@ class NotificationService {
     final ReminderSettings settings = plan.reminderSettings;
     final tz.TZDateTime scheduledDate = _nextReminderDate(settings);
 
+    final bool canScheduleExact = await _canScheduleExactAlarms();
+
     await _plugin.zonedSchedule(
       _reminderNotificationId(plan.id),
       'Gym reminder',
@@ -136,9 +145,9 @@ class NotificationService {
           : 'It is time for your ${settings.periodLabel.toLowerCase()} workout.',
       scheduledDate,
       _notificationDetails(),
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      androidScheduleMode: canScheduleExact
+          ? AndroidScheduleMode.exactAllowWhileIdle
+          : AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
     );
   }
@@ -152,6 +161,8 @@ class NotificationService {
       return;
     }
 
+    final bool canScheduleExact = await _canScheduleExactAlarms();
+
     await _plugin.zonedSchedule(
       _packingNotificationId(plan.id),
       'Pack your gym bag',
@@ -161,9 +172,9 @@ class NotificationService {
       ),
       _nextReminderDate(plan.reminderSettings),
       _notificationDetails(),
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      androidScheduleMode: canScheduleExact
+          ? AndroidScheduleMode.exactAllowWhileIdle
+          : AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
     );
   }
