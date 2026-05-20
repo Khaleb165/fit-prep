@@ -44,7 +44,7 @@ class NotificationService {
       iOS: iosSettings,
     );
 
-    await _plugin.initialize(settings);
+    await _plugin.initialize(settings: settings);
     _isInitialized = true;
   }
 
@@ -63,10 +63,10 @@ class NotificationService {
   Future<void> showPlanCreatedNotification(WorkoutPlan plan) async {
     try {
       await _plugin.show(
-        _successNotificationId(plan.id),
-        'Plan created',
-        '${plan.title} has been saved successfully.',
-        _notificationDetails(),
+        id: _successNotificationId(plan.id),
+        title: 'Plan created',
+        body: '${plan.title} has been saved successfully.',
+        notificationDetails: _notificationDetails(),
       );
     } catch (_) {
       // Notification failures should not block the save flow.
@@ -85,9 +85,9 @@ class NotificationService {
 
   Future<void> cancelPlanNotifications(String planId) async {
     try {
-      await _plugin.cancel(_reminderNotificationId(planId));
-      await _plugin.cancel(_packingNotificationId(planId));
-      await _plugin.cancel(_forgotPackingNotificationId(planId));
+      await _plugin.cancel(id: _reminderNotificationId(planId));
+      await _plugin.cancel(id: _packingNotificationId(planId));
+      await _plugin.cancel(id: _forgotPackingNotificationId(planId));
     } catch (_) {
       // Ignore cancellation failures from stale or missing notifications.
     }
@@ -139,13 +139,13 @@ class NotificationService {
     final bool canScheduleExact = await _canScheduleExactAlarms();
 
     await _plugin.zonedSchedule(
-      _reminderNotificationId(plan.id),
-      'Gym reminder',
-      settings.remindBefore
+      id: _reminderNotificationId(plan.id),
+      title: 'Gym reminder',
+      body: settings.remindBefore
           ? 'Your ${settings.periodLabel.toLowerCase()} workout is in 1 hour.'
           : 'It is time for your ${settings.periodLabel.toLowerCase()} workout.',
-      scheduledDate,
-      _notificationDetails(),
+      scheduledDate: scheduledDate,
+      notificationDetails: _notificationDetails(),
       androidScheduleMode: canScheduleExact
           ? AndroidScheduleMode.exactAllowWhileIdle
           : AndroidScheduleMode.inexactAllowWhileIdle,
@@ -158,22 +158,22 @@ class NotificationService {
         plan.items.where((item) => !item.isChecked).toList();
 
     if (uncheckedItems.isEmpty) {
-      await _plugin.cancel(_packingNotificationId(plan.id));
-      await _plugin.cancel(_forgotPackingNotificationId(plan.id));
+      await _plugin.cancel(id: _packingNotificationId(plan.id));
+      await _plugin.cancel(id: _forgotPackingNotificationId(plan.id));
       return;
     }
 
     final bool canScheduleExact = await _canScheduleExactAlarms();
 
     await _plugin.zonedSchedule(
-      _packingNotificationId(plan.id),
-      'Pack your gym bag',
-      _packingReminderBody(
+      id: _packingNotificationId(plan.id),
+      title: 'Pack your gym bag',
+      body: _packingReminderBody(
         uncheckedItems: uncheckedItems,
         totalItemCount: plan.items.length,
       ),
-      _nextReminderDate(plan.reminderSettings),
-      _notificationDetails(),
+      scheduledDate: _nextReminderDate(plan.reminderSettings),
+      notificationDetails: _notificationDetails(),
       androidScheduleMode: canScheduleExact
           ? AndroidScheduleMode.exactAllowWhileIdle
           : AndroidScheduleMode.inexactAllowWhileIdle,
@@ -290,11 +290,11 @@ class NotificationService {
     final bool canScheduleExact = await _canScheduleExactAlarms();
 
     await _plugin.zonedSchedule(
-      _forgotPackingNotificationId(plan.id),
-      'Packing reminder',
-      notificationBody,
-      followUpTime,
-      _notificationDetails(),
+      id: _forgotPackingNotificationId(plan.id),
+      title: 'Packing reminder',
+      body: notificationBody,
+      scheduledDate: followUpTime,
+      notificationDetails: _notificationDetails(),
       androidScheduleMode: canScheduleExact
           ? AndroidScheduleMode.exactAllowWhileIdle
           : AndroidScheduleMode.inexactAllowWhileIdle,
