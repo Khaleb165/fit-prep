@@ -67,7 +67,7 @@ class PlansTab extends StatelessWidget {
             child: Material(
               color: AppColors.cardWhite,
               elevation: 2,
-              shadowColor: AppColors.textSecondary.withOpacity(0.5),
+              shadowColor: AppColors.textSecondary.withAlpha(20),
               borderRadius: BorderRadius.circular(24),
               child: InkWell(
                 borderRadius: BorderRadius.circular(24),

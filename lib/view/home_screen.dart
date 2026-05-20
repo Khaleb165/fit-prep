@@ -75,7 +75,7 @@ class _HomePageState extends State<HomePage> {
           selectedIndex: _selectedIndex,
           height: 76,
           backgroundColor: AppColors.cardWhite,
-          indicatorColor: AppColors.deepBlue.withOpacity(0.12),
+          indicatorColor: AppColors.deepBlue.withAlpha(30),
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
           onDestinationSelected: (index) {
             setState(() {

@@ -43,7 +43,7 @@ class PlanDetailPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     DropdownButtonFormField<int>(
-                      value: selectedPeriodIndex,
+                      initialValue: selectedPeriodIndex,
                       decoration: const InputDecoration(
                         labelText: 'Session period',
                       ),

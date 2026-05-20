@@ -40,7 +40,7 @@ ThemeData buildAppTheme() {
       scrolledUnderElevation: 0,
       centerTitle: true,
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: AppColors.cardWhite,
       elevation: 0,
       shape: RoundedRectangleBorder(

@@ -265,7 +265,7 @@ class _ReminderPageState extends State<ReminderPage> {
                             ),
                             Switch(
                               value: _remindBefore,
-                              activeColor: AppColors.cardWhite,
+                              activeThumbColor: AppColors.cardWhite,
                               activeTrackColor: AppColors.vibrantGreen,
                               inactiveThumbColor: AppColors.cardWhite,
                               inactiveTrackColor: AppColors.borderDivider,
@@ -382,7 +382,6 @@ class _ReminderPageState extends State<ReminderPage> {
                         fontWeight: FontWeight.w400,
                       ),
                     ),
-              
             ),
           ),
         ),
