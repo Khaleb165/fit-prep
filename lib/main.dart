@@ -1,9 +1,11 @@
-import 'package:fit_prep/view/home_screen.dart';
+import 'package:fit_prep/core/services/auth_service.dart';
+import 'package:fit_prep/view/sign_up_page.dart';
 import 'package:fit_prep/view/welcome_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import 'view_model/auth_provider.dart';
 import 'view_model/checklist_provider.dart';
 import 'view_model/plan_provider.dart';
 import 'core/services/notification_service.dart';
@@ -63,11 +65,14 @@ class _MainAppState extends State<MainApp> {
         ChangeNotifierProvider(
           create: (_) => PlanProvider(storage: widget.storage),
         ),
+        ChangeNotifierProvider(
+          create: (_) => AuthProvider(authService: const MockAuthService()),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: buildAppTheme(),
-        home: widget.showWelcomePage ? const WelcomePage() : const HomePage(),
+        home: widget.showWelcomePage ? const WelcomePage() : const SignUpPage(),
       ),
     );
   }
