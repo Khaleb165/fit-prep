@@ -180,7 +180,7 @@ class NotificationService {
       matchDateTimeComponents: DateTimeComponents.time,
     );
 
-    // Schedule follow-up notification for forgotten items 30 minutes after packing reminder
+    // Schedule follow-up notification for forgotten items 90 minutes after packing reminder
     await _scheduleForgottenItemsNotification(plan, uncheckedItems);
   }
 
@@ -279,7 +279,7 @@ class NotificationService {
     final ReminderSettings settings = plan.reminderSettings;
     final tz.TZDateTime packingReminderTime = _nextReminderDate(settings);
     final tz.TZDateTime followUpTime =
-        packingReminderTime.add(const Duration(minutes: 30));
+        packingReminderTime.add(const Duration(minutes: 90));
 
     if (uncheckedItems.isEmpty) {
       return;
