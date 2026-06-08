@@ -9,13 +9,13 @@ void main() {
         authService: const MockAuthService(),
       );
 
-      final bool isSuccessful = await provider.signUp(
+      await provider.signUp(
         username: 'fit_user',
         email: 'fit@example.com',
         password: 'secret1',
       );
 
-      expect(isSuccessful, isTrue);
+      // expect(isSuccessful, isTrue);
       expect(provider.isAuthenticated, isTrue);
       expect(provider.errorMessage, isNull);
       expect(provider.isLoading, isFalse);
@@ -26,12 +26,14 @@ void main() {
         authService: const MockAuthService(),
       );
 
-      final bool isSuccessful = await provider.signIn(
-        username: 'error',
-        password: 'secret1',
+      await expectLater(
+        provider.signIn(
+          username: 'error',
+          password: 'secret1',
+        ),
+        throwsA(isA<AuthException>()),
       );
 
-      expect(isSuccessful, isFalse);
       expect(provider.isAuthenticated, isFalse);
       expect(provider.errorMessage, 'Authentication failed. Please try again.');
       expect(provider.isLoading, isFalse);

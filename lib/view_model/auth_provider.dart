@@ -17,12 +17,12 @@ class AuthProvider extends ChangeNotifier {
   bool get isAuthenticated => _isAuthenticated;
   String? get errorMessage => _errorMessage;
 
-  Future<bool> signUp({
+  Future<void> signUp({
     required String username,
     required String email,
     required String password,
-  }) {
-    return _runAuthAction(
+  }) async {
+    await _runAuthAction(
       () => _authService.signUp(
         username: username.trim(),
         email: email.trim(),
@@ -31,11 +31,11 @@ class AuthProvider extends ChangeNotifier {
     );
   }
 
-  Future<bool> signIn({
+  Future<void> signIn({
     required String username,
     required String password,
-  }) {
-    return _runAuthAction(
+  }) async {
+    await _runAuthAction(
       () => _authService.signIn(
         username: username.trim(),
         password: password,
@@ -43,20 +43,21 @@ class AuthProvider extends ChangeNotifier {
     );
   }
 
-  Future<bool> _runAuthAction(Future<void> Function() action) async {
+  Future<void> _runAuthAction(Future<void> Function() action) async {
     _setLoading(true);
 
     try {
       await action();
       _isAuthenticated = true;
       _errorMessage = null;
-      return true;
     } on AuthException catch (error) {
+      _isAuthenticated = false;
       _errorMessage = error.message;
-      return false;
-    } catch (_) {
-      _errorMessage = 'Something went wrong. Please try again.';
-      return false;
+      rethrow;
+    } catch (error) {
+      _isAuthenticated = false;
+      _errorMessage = error.toString();
+      throw AuthException(_errorMessage!);
     } finally {
       _setLoading(false);
     }
