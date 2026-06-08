@@ -138,4 +138,13 @@ class HiveStorage {
   String? getEmail() {
     return _settingsBox.get(_emailKey) as String?;
   }
+
+  // clear all session-related data
+  Future<void> clearSession() async {
+    await _settingsBox.delete(_tokenKey);
+    await _settingsBox.delete(_usernameKey);
+    await _settingsBox.delete(_passwordKey);
+    await _settingsBox.delete(_emailKey);
+    await _settingsBox.put(_isLoggedInKey, false);
+  }
 }

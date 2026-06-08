@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../core/services/remote_auth_service.dart';
 import '../core/theme/app_colors.dart';
 import 'homescreen_tabs/home_tab.dart';
 import 'homescreen_tabs/plans_tab.dart';
 import '../core/widgets/gradient_logo_app_bar.dart';
+import 'sign_in_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -19,6 +21,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late int _selectedIndex;
+  final _authService = RemoteAuthService();
+
+  void _openSignIn() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => const SignInPage()),
+    );
+  }
 
   @override
   void initState() {
@@ -35,7 +44,18 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       extendBody: true,
-      appBar: const GradientLogoAppBar(),
+      appBar: GradientLogoAppBar(
+        actions: [
+          // logout button
+          IconButton(
+            icon: const Icon(Icons.logout_outlined),
+            onPressed: () async {
+              await _authService.signOut();
+              _openSignIn();
+            },
+          ),
+        ],
+      ),
       body: Container(
         width: double.infinity,
         height: double.infinity,

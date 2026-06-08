@@ -47,6 +47,11 @@ class RemoteAuthService implements AuthService {
     await _saveAuthSession(response);
   }
 
+  // log out and clear session data
+  Future<void> signOut() async {
+    await _storage.clearSession();
+  }
+
   Future<Map<String, dynamic>> _request(
     String endpoint,
     Map<String, dynamic> body,
