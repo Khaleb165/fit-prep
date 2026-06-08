@@ -15,6 +15,11 @@ class HiveStorage {
   static const String _checklistItemsKey = 'checklist_items';
   static const String _reminderDraftKey = 'reminder_draft';
   static const String _workoutPlansKey = 'workout_plans';
+  static const String _tokenKey = 'auth_token';
+  static const String _usernameKey = 'username';
+  static const String _passwordKey = 'password';
+  static const String _isLoggedInKey = 'is_logged_in';
+  static const String _emailKey = 'email';
 
   Future<void> init() async {
     await Hive.initFlutter();
@@ -89,10 +94,49 @@ class HiveStorage {
   }
 
   Future<void> saveWorkoutPlans(List<WorkoutPlan> plans) async {
-    final List<Map<String, dynamic>> serializedPlans = plans
-        .map((plan) => plan.toMap())
-        .toList();
+    final List<Map<String, dynamic>> serializedPlans =
+        plans.map((plan) => plan.toMap()).toList();
 
     await _checklistBox.put(_workoutPlansKey, serializedPlans);
+  }
+
+  Future<void> setToken(String token) async {
+    await _settingsBox.put(_tokenKey, token);
+  }
+
+  String? getToken() {
+    return _settingsBox.get(_tokenKey) as String?;
+  }
+
+  Future<void> setUsername(String username) async {
+    await _settingsBox.put(_usernameKey, username);
+  }
+
+  String? getUsername() {
+    return _settingsBox.get(_usernameKey) as String?;
+  }
+
+  Future<void> setPassword(String password) async {
+    await _settingsBox.put(_passwordKey, password);
+  }
+
+  String? getPassword() {
+    return _settingsBox.get(_passwordKey) as String?;
+  }
+
+  Future<void> setIsLoggedIn(bool value) async {
+    await _settingsBox.put(_isLoggedInKey, value);
+  }
+
+  bool getIsLoggedIn() {
+    return _settingsBox.get(_isLoggedInKey, defaultValue: false) as bool;
+  }
+
+  Future<void> setEmail(String email) async {
+    await _settingsBox.put(_emailKey, email);
+  }
+
+  String? getEmail() {
+    return _settingsBox.get(_emailKey) as String?;
   }
 }
