@@ -1,3 +1,4 @@
+import 'package:fit_prep/data/offline/hive.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/constants/size_config.dart';
@@ -15,13 +16,23 @@ class HomeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ScreenSize().init(context);
+    final username = HiveStorage.instance.getUsername() ?? 'User';
 
     return SafeArea(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 120),
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 50),
         child: Column(
           crossAxisAlignment: crossStart,
           children: [
+            Text(
+              'Hello, $username!',
+              style: TextStyle(
+                fontSize: getProportionateScreenHeight(20),
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            SizedBox(height: getProportionateScreenHeight(5)),
             Text(
               "Let's get ready for your next workout",
               style: TextStyle(
