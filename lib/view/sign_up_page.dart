@@ -1,3 +1,4 @@
+import 'package:fit_prep/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -35,31 +36,46 @@ class _SignUpPageState extends State<SignUpPage> {
     }
 
     final AuthProvider authProvider = context.read<AuthProvider>();
-    final bool isSuccessful = await authProvider.signUp(
-      username: _usernameController.text,
-      email: _emailController.text,
-      password: _passwordController.text,
-    );
+    final username = _usernameController.text;
+    final email = _emailController.text;
+    final password = _passwordController.text;
 
-    if (!mounted) {
-      return;
-    }
-
-    if (isSuccessful) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const HomePage()),
-        (route) => false,
+    try {
+      await authProvider.signUp(
+        username: username,
+        email: email,
+        password: password,
       );
-      return;
-    }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          authProvider.errorMessage ?? 'Unable to create account.',
+      if (!context.mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sign-up successful!')),
+      );
+
+      if (authProvider.isAuthenticated) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const HomePage()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      debugPrint('Sign-up error: $e');
+      if (!context.mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            authProvider.errorMessage ?? 'Sign-up failed. Please try again.',
+          ),
+          backgroundColor: AppColors.errorRed,
         ),
-      ),
-    );
+      );
+    }
   }
 
   void _openSignIn() {

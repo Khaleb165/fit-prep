@@ -1,10 +1,10 @@
 import 'package:fit_prep/core/constants/size_config.dart';
 import 'package:fit_prep/data/offline/hive.dart';
-import 'package:fit_prep/view/sign_up_page.dart';
 import 'package:flutter/material.dart';
 import 'package:svg_flutter/svg.dart';
 
 import '../core/theme/app_colors.dart';
+import 'sign_in_page.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
@@ -18,7 +18,7 @@ class WelcomePage extends StatelessWidget {
 
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const SignUpPage()),
+      MaterialPageRoute(builder: (context) => const SignInPage()),
     );
   }
 

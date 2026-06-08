@@ -82,6 +82,7 @@ class _ReminderPageState extends State<ReminderPage> {
         const SnackBar(
           content: Text(
               'Add items to your checklist first before saving a reminder.'),
+          backgroundColor: AppColors.errorRed,
         ),
       );
       return;

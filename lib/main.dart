@@ -1,10 +1,13 @@
-import 'package:fit_prep/core/services/auth_service.dart';
-import 'package:fit_prep/view/sign_up_page.dart';
+import 'package:fit_prep/core/services/remote_auth_service.dart';
+import 'package:fit_prep/data/remote/network/dio_client.dart';
+import 'package:fit_prep/view/sign_in_page.dart';
 import 'package:fit_prep/view/welcome_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 
+import 'view/home_screen.dart';
 import 'view_model/auth_provider.dart';
 import 'view_model/checklist_provider.dart';
 import 'view_model/plan_provider.dart';
@@ -59,6 +62,8 @@ class _MainAppState extends State<MainApp> {
 
   @override
   Widget build(BuildContext context) {
+    final isLoggedIn = widget.storage.getIsLoggedIn();
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
@@ -68,13 +73,17 @@ class _MainAppState extends State<MainApp> {
           create: (_) => PlanProvider(storage: widget.storage),
         ),
         ChangeNotifierProvider(
-          create: (_) => AuthProvider(authService: const MockAuthService()),
+          create: (_) => AuthProvider(authService: RemoteAuthService()),
         ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: buildAppTheme(),
-        home: widget.showWelcomePage ? const WelcomePage() : const SignUpPage(),
+        home: widget.showWelcomePage
+            ? const WelcomePage()
+            : isLoggedIn
+                ? const HomePage()
+                : const SignInPage(),
       ),
     );
   }

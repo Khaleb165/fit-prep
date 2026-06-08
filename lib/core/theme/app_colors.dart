@@ -7,6 +7,7 @@ class AppColors {
   static const Color deepBlue = Color(0xFF1E6FD9);
   static const Color brightBlue = Color(0xFF2FA4FF);
   static const Color tealBlue = Color(0xFF2FB7A8);
+  static const Color errorRed = Color(0xFFFF3B30);
 
   // Secondary colors
   static const Color vibrantGreen = Color(0xFF34C759);

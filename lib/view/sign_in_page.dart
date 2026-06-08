@@ -1,3 +1,4 @@
+import 'package:fit_prep/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -33,30 +34,41 @@ class _SignInPageState extends State<SignInPage> {
     }
 
     final AuthProvider authProvider = context.read<AuthProvider>();
-    final bool isSuccessful = await authProvider.signIn(
-      username: _usernameController.text,
-      password: _passwordController.text,
-    );
+    final username = _usernameController.text;
+    final password = _passwordController.text;
 
-    if (!mounted) {
-      return;
-    }
+    try {
+      await authProvider.signIn(username: username, password: password);
 
-    if (isSuccessful) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const HomePage()),
-        (route) => false,
+      if (!context.mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sign-in successful!')),
       );
-      return;
-    }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          authProvider.errorMessage ?? 'Unable to sign in.',
+      if (authProvider.isAuthenticated) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const HomePage()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      debugPrint('Sign-in error: $e');
+      if (!context.mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            authProvider.errorMessage ?? 'Sign-in failed. Please try again.',
+          ),
+          backgroundColor: AppColors.errorRed,
         ),
-      ),
-    );
+      );
+    }
   }
 
   void _openSignUp() {
