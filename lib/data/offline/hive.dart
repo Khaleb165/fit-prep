@@ -40,9 +40,9 @@ class HiveStorage {
 
   List<ChecklistItem> getChecklistItems() {
     final List<dynamic> rawItems = (_checklistBox.get(
-          _checklistItemsKey,
-          defaultValue: <dynamic>[],
-        ) as List)
+      _checklistItemsKey,
+      defaultValue: <dynamic>[],
+    ) as List)
         .cast<dynamic>();
 
     return rawItems
@@ -55,9 +55,8 @@ class HiveStorage {
   }
 
   Future<void> saveChecklistItems(List<ChecklistItem> items) async {
-    final List<Map<String, dynamic>> serializedItems = items
-        .map((item) => item.toMap())
-        .toList();
+    final List<Map<String, dynamic>> serializedItems =
+        items.map((item) => item.toMap()).toList();
 
     await _checklistBox.put(_checklistItemsKey, serializedItems);
   }
@@ -65,9 +64,9 @@ class HiveStorage {
   ReminderSettings getReminderDraft() {
     final Map<dynamic, dynamic> rawDraft = Map<dynamic, dynamic>.from(
       _checklistBox.get(
-            _reminderDraftKey,
-            defaultValue: <dynamic, dynamic>{},
-          ) as Map,
+        _reminderDraftKey,
+        defaultValue: <dynamic, dynamic>{},
+      ) as Map,
     );
 
     return ReminderSettings.fromMap(rawDraft);
@@ -79,9 +78,9 @@ class HiveStorage {
 
   List<WorkoutPlan> getWorkoutPlans() {
     final List<dynamic> rawPlans = (_checklistBox.get(
-          _workoutPlansKey,
-          defaultValue: <dynamic>[],
-        ) as List)
+      _workoutPlansKey,
+      defaultValue: <dynamic>[],
+    ) as List)
         .cast<dynamic>();
 
     return rawPlans
