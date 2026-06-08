@@ -14,6 +14,8 @@ import 'core/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
+  await DioClient().initDioClient();
 
   final HiveStorage storage = HiveStorage.instance;
   await storage.init();
