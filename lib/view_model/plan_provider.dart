@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import '../core/services/notification_service.dart';
+import '../core/services/remote_plan_service.dart';
 import '../data/offline/hive.dart';
 import '../model/checklist_item.dart';
 import '../model/reminder_settings.dart';
@@ -9,7 +10,9 @@ import '../model/workout_plan.dart';
 class PlanProvider extends ChangeNotifier with WidgetsBindingObserver {
   PlanProvider({
     required HiveStorage storage,
-  }) : _storage = storage {
+    RemotePlanService? remotePlanService,
+  })  : _storage = storage,
+        _remotePlanService = remotePlanService ?? RemotePlanService() {
     _reminderDraft = _storage.getReminderDraft();
     _plans = _storage.getWorkoutPlans();
     WidgetsBinding.instance.addObserver(this);
@@ -17,6 +20,7 @@ class PlanProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   final HiveStorage _storage;
+  final RemotePlanService _remotePlanService;
   late ReminderSettings _reminderDraft;
   late final List<WorkoutPlan> _plans;
 
@@ -39,6 +43,7 @@ class PlanProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> _initializePlanState() async {
     await _applyDailyChecklistResets();
+    await _fetchRemotePlans();
     await _syncNotifications();
   }
 
@@ -144,6 +149,7 @@ class PlanProvider extends ChangeNotifier with WidgetsBindingObserver {
 
     return workoutDateTime;
   }
+
   String _dateKey(DateTime dateTime) {
     final String month = dateTime.month.toString().padLeft(2, '0');
     final String day = dateTime.day.toString().padLeft(2, '0');
@@ -171,7 +177,8 @@ class PlanProvider extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
-  Future<WorkoutPlan?> createPlanFromChecklist(List<ChecklistItem> items) async {
+  Future<WorkoutPlan?> createPlanFromChecklist(
+      List<ChecklistItem> items) async {
     if (items.isEmpty) {
       return null;
     }
@@ -194,14 +201,16 @@ class PlanProvider extends ChangeNotifier with WidgetsBindingObserver {
       lastChecklistResetKey: null,
     );
 
-    _plans.insert(0, plan);
+    final WorkoutPlan planToSave = await _createRemotePlanOrFallback(plan);
+
+    _plans.insert(0, planToSave);
     _reminderDraft = const ReminderSettings();
     await _persistPlans();
     await _storage.saveReminderDraft(_reminderDraft);
-    await NotificationService.instance.showPlanCreatedNotification(plan);
-    await NotificationService.instance.schedulePlanNotifications(plan);
+    await NotificationService.instance.showPlanCreatedNotification(planToSave);
+    await NotificationService.instance.schedulePlanNotifications(planToSave);
     notifyListeners();
-    return plan;
+    return planToSave;
   }
 
   Future<void> togglePlanItem(String planId, String itemId) async {
@@ -215,7 +224,8 @@ class PlanProvider extends ChangeNotifier with WidgetsBindingObserver {
       return;
     }
 
-    final List<ChecklistItem> updatedItems = List<ChecklistItem>.from(plan.items);
+    final List<ChecklistItem> updatedItems =
+        List<ChecklistItem>.from(plan.items);
     final ChecklistItem item = updatedItems[itemIndex];
     updatedItems[itemIndex] = item.copyWith(isChecked: !item.isChecked);
 
@@ -245,7 +255,8 @@ class PlanProvider extends ChangeNotifier with WidgetsBindingObserver {
       return;
     }
 
-    final List<ChecklistItem> updatedItems = List<ChecklistItem>.from(plan.items);
+    final List<ChecklistItem> updatedItems =
+        List<ChecklistItem>.from(plan.items);
     updatedItems[itemIndex] = updatedItems[itemIndex].copyWith(
       title: trimmedTitle,
     );
@@ -262,9 +273,8 @@ class PlanProvider extends ChangeNotifier with WidgetsBindingObserver {
       return;
     }
 
-    final List<ChecklistItem> updatedItems = plan.items
-        .where((item) => item.id != itemId)
-        .toList();
+    final List<ChecklistItem> updatedItems =
+        plan.items.where((item) => item.id != itemId).toList();
 
     await _replacePlan(
       planId,
@@ -297,10 +307,11 @@ class PlanProvider extends ChangeNotifier with WidgetsBindingObserver {
       return;
     }
 
-    _plans.removeAt(index);
+    final WorkoutPlan removedPlan = _plans.removeAt(index);
     await _persistPlans();
     await NotificationService.instance.cancelPlanNotifications(planId);
     notifyListeners();
+    await _deleteRemotePlanIfPossible(removedPlan.id);
   }
 
   Future<void> _replacePlan(
@@ -312,14 +323,86 @@ class PlanProvider extends ChangeNotifier with WidgetsBindingObserver {
       return;
     }
 
+    final WorkoutPlan previousPlan = _plans[index];
     _plans[index] = updatedPlan;
     await _persistPlans();
     await NotificationService.instance.schedulePlanNotifications(updatedPlan);
     notifyListeners();
+    if (previousPlan.title != updatedPlan.title) {
+      await _updateRemotePlanIfPossible(updatedPlan);
+    }
   }
 
   Future<void> _persistPlans() async {
     await _storage.saveWorkoutPlans(_plans);
+  }
+
+  Future<void> _fetchRemotePlans() async {
+    if (!_canSyncRemotePlans()) {
+      return;
+    }
+
+    try {
+      final remotePlans = await _remotePlanService.fetchPlans(
+        localPlans: _plans,
+      );
+      final Set<String> remotePlanIds =
+          remotePlans.map((plan) => plan.id).toSet();
+      final List<WorkoutPlan> localOnlyPlans =
+          _plans.where((plan) => !remotePlanIds.contains(plan.id)).toList();
+
+      _plans
+        ..clear()
+        ..addAll(remotePlans)
+        ..addAll(localOnlyPlans);
+
+      await _persistPlans();
+      notifyListeners();
+    } catch (error) {
+      debugPrint('Failed to fetch remote plans: $error');
+    }
+  }
+
+  Future<WorkoutPlan> _createRemotePlanOrFallback(WorkoutPlan plan) async {
+    if (!_canSyncRemotePlans()) {
+      return plan;
+    }
+
+    try {
+      return await _remotePlanService.createPlan(plan);
+    } catch (error) {
+      debugPrint('Failed to create remote plan: $error');
+      return plan;
+    }
+  }
+
+  Future<void> _updateRemotePlanIfPossible(WorkoutPlan plan) async {
+    if (!_canSyncRemotePlans()) {
+      return;
+    }
+
+    try {
+      await _remotePlanService.updatePlan(plan);
+    } catch (error) {
+      debugPrint('Failed to update remote plan: $error');
+    }
+  }
+
+  Future<void> _deleteRemotePlanIfPossible(String planId) async {
+    if (!_canSyncRemotePlans()) {
+      return;
+    }
+
+    try {
+      await _remotePlanService.deletePlan(planId);
+    } catch (error) {
+      debugPrint('Failed to delete remote plan: $error');
+    }
+  }
+
+  bool _canSyncRemotePlans() {
+    return _storage.getIsLoggedIn() &&
+        (_storage.getToken()?.isNotEmpty ?? false);
   }
 
   @override
