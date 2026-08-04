@@ -111,6 +111,18 @@ class _ReminderPageState extends State<ReminderPage> {
         ),
         (route) => false,
       );
+    } catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Could not save the plan. Check your connection and try again.',
+            ),
+            backgroundColor: AppColors.errorRed,
+          ),
+        );
+      }
+      debugPrint('Failed to save plan: $error');
     } finally {
       if (mounted) {
         setState(() {
