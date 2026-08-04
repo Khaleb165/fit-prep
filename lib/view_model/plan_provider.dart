@@ -177,6 +177,20 @@ class PlanProvider extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
+  Future<void> refreshFromBackend() async {
+    await _fetchRemotePlans();
+    await _syncNotifications();
+  }
+
+  Future<void> clearLocalPlans() async {
+    for (final plan in _plans) {
+      await NotificationService.instance.cancelPlanNotifications(plan.id);
+    }
+    _plans.clear();
+    await _persistPlans();
+    notifyListeners();
+  }
+
   Future<WorkoutPlan?> createPlanFromChecklist(
       List<ChecklistItem> items) async {
     if (items.isEmpty) {
@@ -201,7 +215,7 @@ class PlanProvider extends ChangeNotifier with WidgetsBindingObserver {
       lastChecklistResetKey: null,
     );
 
-    final WorkoutPlan planToSave = await _createRemotePlanOrFallback(plan);
+    final WorkoutPlan planToSave = await _createRemotePlan(plan);
 
     _plans.insert(0, planToSave);
     _reminderDraft = const ReminderSettings();
@@ -323,14 +337,11 @@ class PlanProvider extends ChangeNotifier with WidgetsBindingObserver {
       return;
     }
 
-    final WorkoutPlan previousPlan = _plans[index];
     _plans[index] = updatedPlan;
     await _persistPlans();
     await NotificationService.instance.schedulePlanNotifications(updatedPlan);
     notifyListeners();
-    if (previousPlan.title != updatedPlan.title) {
-      await _updateRemotePlanIfPossible(updatedPlan);
-    }
+    await _updateRemotePlanIfPossible(updatedPlan);
   }
 
   Future<void> _persistPlans() async {
@@ -346,15 +357,9 @@ class PlanProvider extends ChangeNotifier with WidgetsBindingObserver {
       final remotePlans = await _remotePlanService.fetchPlans(
         localPlans: _plans,
       );
-      final Set<String> remotePlanIds =
-          remotePlans.map((plan) => plan.id).toSet();
-      final List<WorkoutPlan> localOnlyPlans =
-          _plans.where((plan) => !remotePlanIds.contains(plan.id)).toList();
-
       _plans
         ..clear()
-        ..addAll(remotePlans)
-        ..addAll(localOnlyPlans);
+        ..addAll(remotePlans);
 
       await _persistPlans();
       notifyListeners();
@@ -363,17 +368,12 @@ class PlanProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  Future<WorkoutPlan> _createRemotePlanOrFallback(WorkoutPlan plan) async {
+  Future<WorkoutPlan> _createRemotePlan(WorkoutPlan plan) async {
     if (!_canSyncRemotePlans()) {
       return plan;
     }
 
-    try {
-      return await _remotePlanService.createPlan(plan);
-    } catch (error) {
-      debugPrint('Failed to create remote plan: $error');
-      return plan;
-    }
+    return _remotePlanService.createPlan(plan);
   }
 
   Future<void> _updateRemotePlanIfPossible(WorkoutPlan plan) async {
