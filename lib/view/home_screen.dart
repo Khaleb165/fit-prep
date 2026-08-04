@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../core/services/remote_auth_service.dart';
 import '../core/theme/app_colors.dart';
+import '../core/widgets/gradient_logo_app_bar.dart';
+import '../view_model/plan_provider.dart';
 import 'homescreen_tabs/home_tab.dart';
 import 'homescreen_tabs/plans_tab.dart';
-import '../core/widgets/gradient_logo_app_bar.dart';
 import 'sign_in_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -51,6 +53,13 @@ class _HomePageState extends State<HomePage> {
             icon: const Icon(Icons.logout_outlined),
             onPressed: () async {
               await _authService.signOut();
+              if (!context.mounted) {
+                return;
+              }
+              await context.read<PlanProvider>().clearLocalPlans();
+              if (!context.mounted) {
+                return;
+              }
               _openSignIn();
             },
           ),

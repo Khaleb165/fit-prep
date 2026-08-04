@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../core/widgets/auth_page_scaffold.dart';
 import '../view_model/auth_provider.dart';
+import '../view_model/plan_provider.dart';
 import 'home_screen.dart';
 import 'sign_up_page.dart';
 
@@ -39,6 +40,7 @@ class _SignInPageState extends State<SignInPage> {
 
     try {
       await authProvider.signIn(username: username, password: password);
+      await context.read<PlanProvider>().refreshFromBackend();
 
       if (!context.mounted) {
         return;
