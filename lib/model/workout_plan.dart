@@ -148,9 +148,11 @@ class WorkoutPlan {
       minute: timeParts.length == 2
           ? int.tryParse(timeParts[1]) ?? fallback?.minute ?? 0
           : fallback?.minute ?? 0,
-      remindBefore: json['reminder']?.toString() == 'on_time'
-          ? false
-          : fallback?.remindBefore ?? true,
+      remindBefore: switch (json['reminder']?.toString()) {
+        'one_hour_before' => true,
+        'on_time' => false,
+        _ => fallback?.remindBefore ?? true,
+      },
     );
   }
 
