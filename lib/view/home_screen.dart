@@ -22,7 +22,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  static const int _plansTabIndex = 1;
+
   late int _selectedIndex;
+  bool _isRefreshingPlans = false;
   final _authService = RemoteAuthService();
 
   void _openSignIn() {
@@ -35,6 +38,45 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _selectedIndex = widget.initialTabIndex;
+  }
+
+  Future<void> _handleDestinationSelected(int index) async {
+    if (index != _plansTabIndex) {
+      setState(() {
+        _selectedIndex = index;
+      });
+      return;
+    }
+
+    if (_isRefreshingPlans) {
+      return;
+    }
+
+    setState(() {
+      _isRefreshingPlans = true;
+    });
+
+    try {
+      await context.read<PlanProvider>().refreshFromBackend(
+            rethrowErrors: true,
+          );
+    } catch (error) {
+      debugPrint('Failed to refresh plans before opening tab: $error');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not refresh plans. Showing saved plans.'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _selectedIndex = index;
+          _isRefreshingPlans = false;
+        });
+      }
+    }
   }
 
   @override
@@ -106,20 +148,26 @@ class _HomePageState extends State<HomePage> {
           backgroundColor: AppColors.cardWhite,
           indicatorColor: AppColors.deepBlue.withAlpha(30),
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-          onDestinationSelected: (index) {
-            setState(() {
-              _selectedIndex = index;
-            });
-          },
-          destinations: const [
-            NavigationDestination(
+          onDestinationSelected: _handleDestinationSelected,
+          destinations: [
+            const NavigationDestination(
               icon: Icon(Icons.home_outlined),
               selectedIcon: Icon(Icons.home),
               label: 'Home',
             ),
             NavigationDestination(
-              icon: Icon(Icons.calendar_month_outlined),
-              selectedIcon: Icon(Icons.calendar_month),
+              icon: _isRefreshingPlans
+                  ? const SizedBox.square(
+                      dimension: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2.4),
+                    )
+                  : const Icon(Icons.calendar_month_outlined),
+              selectedIcon: _isRefreshingPlans
+                  ? const SizedBox.square(
+                      dimension: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2.4),
+                    )
+                  : const Icon(Icons.calendar_month),
               label: 'Plans',
             ),
           ],
