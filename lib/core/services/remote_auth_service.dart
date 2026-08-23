@@ -28,7 +28,7 @@ class RemoteAuthService implements AuthService {
       },
     );
 
-    await _saveAuthSession(response);
+    await _saveAuthSession(response, password: password);
   }
 
   @override
@@ -44,7 +44,7 @@ class RemoteAuthService implements AuthService {
       },
     );
 
-    await _saveAuthSession(response);
+    await _saveAuthSession(response, password: password);
   }
 
   // log out and clear session data
@@ -70,7 +70,10 @@ class RemoteAuthService implements AuthService {
     }
   }
 
-  Future<void> _saveAuthSession(Map<String, dynamic> response) async {
+  Future<void> _saveAuthSession(
+    Map<String, dynamic> response, {
+    required String password,
+  }) async {
     final token = response['token']?.toString();
     final user = response['user'];
 
@@ -80,6 +83,7 @@ class RemoteAuthService implements AuthService {
 
     await _storage.setToken(token);
     await _storage.setIsLoggedIn(true);
+    await _storage.setPassword(password);
 
     if (user is Map<String, dynamic>) {
       final username = user['username']?.toString();
