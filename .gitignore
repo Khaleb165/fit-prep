@@ -44,3 +44,5 @@ app.*.map.json
 
 # add .env file
 .env
+
+memory.md
