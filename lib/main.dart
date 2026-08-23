@@ -11,6 +11,7 @@ import 'view/home_screen.dart';
 import 'view_model/auth_provider.dart';
 import 'view_model/checklist_provider.dart';
 import 'view_model/plan_provider.dart';
+import 'view_model/preset_provider.dart';
 import 'core/services/notification_service.dart';
 import 'data/offline/hive.dart';
 import 'core/theme/app_theme.dart';
@@ -71,6 +72,9 @@ class _MainAppState extends State<MainApp> {
         ),
         ChangeNotifierProvider(
           create: (_) => PlanProvider(storage: widget.storage),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => PresetProvider(),
         ),
         ChangeNotifierProvider(
           create: (_) => AuthProvider(authService: RemoteAuthService()),
