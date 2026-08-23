@@ -19,17 +19,17 @@ class DioClient {
   DioClient.internal();
 
   Future<void> initDioClient() async {
-    final serverUrl = dotenv.env['API_URL_DEV'] ?? '';
+    final serverUrl = dotenv.env['API_URL'] ?? '';
     if (serverUrl.isEmpty) {
-      throw Exception('API_URL_DEV is missing from .env');
+      throw Exception('API_URL is missing from .env');
     }
 
     _dio = Dio(
       BaseOptions(
         baseUrl: '$serverUrl/',
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
-        sendTimeout: const Duration(seconds: 10),
+        connectTimeout: const Duration(seconds: 60),
+        receiveTimeout: const Duration(seconds: 60),
+        sendTimeout: const Duration(seconds: 60),
       ),
     );
 
