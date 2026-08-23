@@ -177,8 +177,8 @@ class PlanProvider extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
-  Future<void> refreshFromBackend() async {
-    await _fetchRemotePlans();
+  Future<void> refreshFromBackend({bool rethrowErrors = false}) async {
+    await _fetchRemotePlans(rethrowErrors: rethrowErrors);
     await _syncNotifications();
   }
 
@@ -348,7 +348,7 @@ class PlanProvider extends ChangeNotifier with WidgetsBindingObserver {
     await _storage.saveWorkoutPlans(_plans);
   }
 
-  Future<void> _fetchRemotePlans() async {
+  Future<void> _fetchRemotePlans({bool rethrowErrors = false}) async {
     if (!_canSyncRemotePlans()) {
       return;
     }
@@ -365,6 +365,9 @@ class PlanProvider extends ChangeNotifier with WidgetsBindingObserver {
       notifyListeners();
     } catch (error) {
       debugPrint('Failed to fetch remote plans: $error');
+      if (rethrowErrors) {
+        rethrow;
+      }
     }
   }
 
